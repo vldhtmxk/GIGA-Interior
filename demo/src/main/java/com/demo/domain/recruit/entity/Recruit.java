@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.demo.domain.applicant.entity.Applicant;
+import com.demo.global.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -17,7 +18,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Recruit {
+public class Recruit extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long recruitId;
