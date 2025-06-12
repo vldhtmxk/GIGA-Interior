@@ -1,0 +1,39 @@
+package com.demo.domain.recruit.entity;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import com.demo.domain.applicant.entity.Applicant;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import lombok.Getter;
+import lombok.Setter;
+
+@Entity
+@Getter
+@Setter
+public class Recruit {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long recruitId;
+
+    private String position;
+    private String department;
+    private String empType;
+    private String career_level;
+    private String location;
+    private LocalDateTime deadline;
+    private String description;
+    private int isVisible;
+    private int hit;
+
+    @OneToMany(mappedBy = "recruitId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Applicant> applicants;
+
+    
+}
