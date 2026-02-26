@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.demo.domain.recruit.entity.Recruit;
 import com.demo.global.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
@@ -43,8 +44,8 @@ public class Applicant extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruit_id")
-    private long recruitId;
+    private Recruit recruit;
 
-    @OneToMany(mappedBy = "applicantId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ApplicantFile> applicantFiles = new ArrayList<>();
 }

@@ -1,0 +1,20 @@
+[Unit]
+Description=GIGA Interior Spring Boot Backend
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/var/app/backend
+EnvironmentFile=/var/app/backend/.env.backend
+ExecStart=/usr/bin/java -jar /var/app/backend/app.jar
+SuccessExitStatus=143
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+

@@ -37,6 +37,6 @@ public class Portfolio extends BaseEntity {
     private String feature;
     private String materials;
 
-    @OneToMany(mappedBy = "portfolioId", cascade = CascadeType.ALL , orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL , orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PortfolioImage> portfolioImages = new ArrayList<>();
 }

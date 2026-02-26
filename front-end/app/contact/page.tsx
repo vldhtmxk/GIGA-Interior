@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { Mail, Phone, MapPin, Download } from "lucide-react"
+import { inquiryApi } from "@/lib/api"
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "이름을 입력해주세요" }),
@@ -23,6 +24,7 @@ const formSchema = z.object({
 
 export default function ContactPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState("")
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,10 +38,24 @@ export default function ContactPage() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    setIsSubmitted(true)
-    // 실제 구현에서는 여기에 폼 데이터를 서버로 전송하는 코드가 들어갑니다
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setSubmitError("")
+
+    try {
+      await inquiryApi.create({
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        projectType: values.projectType,
+        budgetRange: values.budget,
+        message: values.message,
+      })
+
+      setIsSubmitted(true)
+      form.reset()
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "문의 접수 중 오류가 발생했습니다.")
+    }
   }
 
   return (
@@ -250,8 +266,10 @@ export default function ContactPage() {
                     )}
                   />
 
-                  <Button type="submit" className="w-full">
-                    문의하기
+                  {submitError && <p className="text-sm text-red-600">{submitError}</p>}
+
+                  <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? "문의 접수 중..." : "문의하기"}
                   </Button>
                 </form>
               </Form>

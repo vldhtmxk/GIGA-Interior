@@ -3,12 +3,27 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import HeroCarousel from "@/components/hero-carousel" 
+import { homeContentApi, resolveAssetUrl } from "@/lib/api"
 
-export default function Home() {
+export default async function Home() {
+  let homeContent: Awaited<ReturnType<typeof homeContentApi.get>> | null = null
+  try {
+    homeContent = await homeContentApi.get()
+  } catch {
+    homeContent = null
+  }
+
+  const featured = (homeContent?.featuredProjects?.length ? homeContent.featuredProjects : featuredProjects).map((project) => ({
+    id: String(project.portfolioId ?? project.id),
+    title: project.title,
+    category: project.category ?? "프로젝트",
+    image: resolveAssetUrl((project as any).thumbnailUrl ?? project.image) || "/placeholder.svg",
+  }))
+
   return (
     <main className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <HeroCarousel />
+      <HeroCarousel slides={homeContent?.carousels} />
 
       {/* Featured Projects */}
       <section className="py-20 container mx-auto px-4">
@@ -20,7 +35,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featuredProjects.map((project) => (
+          {featured.map((project) => (
             <Link key={project.id} href={`/portfolio/${project.id}`} className="group block overflow-hidden rounded-lg">
               <div className="relative h-80 overflow-hidden">
                 <Image
@@ -122,20 +137,20 @@ export default function Home() {
 // Sample data
 const featuredProjects = [
   {
-    id: "modern-apartment",
+    portfolioId: "modern-apartment",
     title: "모던 아파트 리모델링",
     category: "주거 공간",
     image:
       "/placeholder.svg?height=800&width=600&query=modern apartment interior with minimalist furniture and white walls",
   },
   {
-    id: "boutique-showroom",
+    portfolioId: "boutique-showroom",
     title: "부티크 쇼룸",
     category: "상업 공간",
     image: "/placeholder.svg?height=800&width=600&query=minimalist retail showroom with white walls and wooden accents",
   },
   {
-    id: "office-space",
+    portfolioId: "office-space",
     title: "크리에이티브 오피스",
     category: "업무 공간",
     image:

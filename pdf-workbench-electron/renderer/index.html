@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF 분리 · 병합 프로그램 (Electron)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            boxShadow: { panel: "0 24px 70px -35px rgba(15,23,42,.35)" },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="../node_modules/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script defer src="../node_modules/jszip/dist/jszip.min.js"></script>
+    <script defer src="./app.js"></script>
+  </head>
+  <body class="min-h-screen bg-slate-100 text-slate-900">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <section class="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-panel backdrop-blur md:p-8">
+        <header class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p class="inline-flex rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
+              HTML · CSS · JavaScript / UTF-8
+            </p>
+            <h1 class="mt-3 text-3xl font-black tracking-tight sm:text-4xl">PDF 분리 · 병합 도구</h1>
+            <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+              Electron 데스크톱 앱에서 PDF 병합/분리를 수행합니다. UTF-8 인코딩을 명시했고, Tailwind CSS 기반으로 사용자 친화적인 UI/UX를 구성했습니다.
+            </p>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
+            <p><span class="font-semibold">PDF 엔진:</span> pdf-lib</p>
+            <p><span class="font-semibold">스타일:</span> Tailwind CSS (CDN)</p>
+            <p><span class="font-semibold">처리:</span> 로컬 데스크톱 앱</p>
+          </div>
+        </header>
+
+        <div class="grid gap-6 xl:grid-cols-[1.45fr_1fr]">
+          <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h2 class="text-lg font-bold">작업 공간</h2>
+              <div class="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+                <button class="mode-btn active rounded-lg px-4 py-2 text-sm font-semibold" data-mode="merge" type="button">병합</button>
+                <button class="mode-btn rounded-lg px-4 py-2 text-sm font-semibold" data-mode="split" type="button">분리</button>
+              </div>
+            </div>
+
+            <div id="dropZone" class="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center transition">
+              <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-xl bg-slate-900 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M12 11v8m0 0l-3-3m3 3l3-3"/>
+                </svg>
+              </div>
+              <p id="dropTitle" class="font-semibold">여러 PDF를 드래그해서 추가</p>
+              <p id="dropDesc" class="mt-1 text-sm text-slate-600">또는 아래 버튼으로 선택하세요.</p>
+              <div class="mt-4 flex flex-wrap justify-center gap-3">
+                <input id="fileInput" type="file" accept=".pdf,application/pdf" multiple class="hidden" />
+                <button id="pickBtn" type="button" class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">PDF 선택</button>
+                <button id="clearBtn" type="button" class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">목록 비우기</button>
+              </div>
+            </div>
+
+            <div class="mt-5">
+              <div class="mb-2 flex items-center justify-between">
+                <h3 class="font-semibold">파일 목록</h3>
+                <p id="fileHint" class="text-xs text-slate-500">병합은 2개 이상, 분리는 1개만 사용</p>
+              </div>
+              <ul id="fileList" class="space-y-2"></ul>
+              <div id="emptyList" class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">아직 PDF 파일이 없습니다.</div>
+            </div>
+
+            <section id="splitPanel" class="mt-6 hidden rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <h3 class="font-semibold">분리 옵션</h3>
+              <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                <button class="split-btn active rounded-xl border border-sky-400 bg-white p-3 text-left" data-split="range" type="button">
+                  <p class="font-semibold">페이지 범위</p>
+                  <p class="mt-1 text-xs text-slate-500">예: 1-3,5,8-10</p>
+                </button>
+                <button class="split-btn rounded-xl border border-slate-200 bg-white p-3 text-left" data-split="single" type="button">
+                  <p class="font-semibold">개별 페이지</p>
+                  <p class="mt-1 text-xs text-slate-500">페이지별 PDF 생성</p>
+                </button>
+                <button class="split-btn rounded-xl border border-slate-200 bg-white p-3 text-left" data-split="chunk" type="button">
+                  <p class="font-semibold">N페이지 단위</p>
+                  <p class="mt-1 text-xs text-slate-500">예: 2페이지씩 분할</p>
+                </button>
+              </div>
+
+              <div id="rangeWrap" class="mt-4">
+                <label for="rangeInput" class="mb-2 block text-sm font-semibold">페이지 범위</label>
+                <input id="rangeInput" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-sky-500" value="1-3,5" />
+                <p id="rangeFeedback" class="mt-2 text-xs"></p>
+              </div>
+              <div id="chunkWrap" class="mt-4 hidden">
+                <label for="chunkInput" class="mb-2 block text-sm font-semibold">분할 단위</label>
+                <input id="chunkInput" type="number" min="1" value="2" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-sky-500" />
+              </div>
+              <div id="splitInfo" class="mt-4 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600">분리할 PDF 1개를 선택하세요.</div>
+            </section>
+          </section>
+
+          <aside class="space-y-6">
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 class="text-lg font-bold">실행 패널</h2>
+              <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                <div class="flex items-center justify-between"><span class="text-slate-500">모드</span><strong id="summaryMode">병합</strong></div>
+                <div class="mt-2 flex items-center justify-between"><span class="text-slate-500">파일 수</span><strong id="summaryCount">0개</strong></div>
+                <div class="mt-2 flex items-center justify-between"><span class="text-slate-500">분리 방식</span><strong id="summarySplit">-</strong></div>
+              </div>
+              <label for="outName" class="mt-4 block text-sm font-semibold">출력 파일명 (병합)</label>
+              <input id="outName" class="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-sky-500" value="merged.pdf" />
+              <div class="mt-4 flex flex-col gap-3">
+                <button id="runBtn" type="button" class="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300">실행</button>
+                <button id="cancelBtn" type="button" disabled class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:text-slate-400">취소 요청</button>
+              </div>
+              <div class="mt-5">
+                <div class="mb-2 flex items-center justify-between text-xs">
+                  <span class="text-slate-500">진행률</span><span id="progressText" class="font-semibold">0%</span>
+                </div>
+                <div class="h-2 rounded-full bg-slate-100"><div id="progressBar" class="h-2 w-0 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 transition-all"></div></div>
+              </div>
+              <div id="status" class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">준비 완료</div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 class="text-lg font-bold">안내</h2>
+              <ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-700">
+                <li>병합은 순서 변경(↑/↓) 후 실행하세요.</li>
+                <li>분리 결과가 여러 개면 ZIP으로 다운로드됩니다.</li>
+                <li>암호화/손상된 PDF는 실패할 수 있습니다.</li>
+              </ul>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

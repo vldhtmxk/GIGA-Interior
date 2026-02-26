@@ -7,6 +7,8 @@ import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Home, Users, Briefcase, MessageSquare, UserCheck, Settings, LogOut, Menu, X } from "lucide-react"
+import { env } from "@/lib/env"
+import { adminAuthApi } from "@/lib/api"
 
 export default function AdminLayout({
   children,
@@ -19,16 +21,52 @@ export default function AdminLayout({
   const pathname = usePathname()
 
   useEffect(() => {
-    const auth = localStorage.getItem("adminAuth")
-    if (auth === "true") {
-      setIsAuthenticated(true)
-    } else if (pathname !== "/admin/login") {
+    const auth = localStorage.getItem(env.adminAuthStorageKey)
+    if (pathname === "/admin/login") return
+
+    if (!auth) {
       router.push("/admin/login")
+      return
+    }
+
+    if (auth === "mock") {
+      setIsAuthenticated(true)
+      return
+    }
+
+    let cancelled = false
+
+    void adminAuthApi
+      .me(auth)
+      .then(() => {
+        if (!cancelled) {
+          setIsAuthenticated(true)
+        }
+      })
+      .catch(() => {
+        localStorage.removeItem(env.adminAuthStorageKey)
+        if (!cancelled) {
+          setIsAuthenticated(false)
+          router.push("/admin/login")
+        }
+      })
+
+    return () => {
+      cancelled = true
     }
   }, [pathname, router])
 
   const handleLogout = () => {
-    localStorage.removeItem("adminAuth")
+    const token = localStorage.getItem(env.adminAuthStorageKey)
+    localStorage.removeItem(env.adminAuthStorageKey)
+    if (token && token !== "mock") {
+      void fetch(`${env.apiBaseUrl}/api/admin/auth/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }).catch(() => undefined)
+    }
     router.push("/admin/login")
   }
 
@@ -47,7 +85,7 @@ export default function AdminLayout({
     { name: "포트폴리오", href: "/admin/portfolio", icon: Briefcase },
     { name: "고객사/파트너", href: "/admin/clients", icon: UserCheck },
     { name: "채용 관리", href: "/admin/recruit", icon: Users },
-    { name: "게시판", href: "/admin/board", icon: MessageSquare },
+    { name: "문의", href: "/admin/board", icon: MessageSquare },
   ]
 
   return (

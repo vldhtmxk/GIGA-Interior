@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { recruitApi, resolveAssetUrl, type RecruitResponse } from "@/lib/api"
 import { ArrowLeft, Calendar, MapPin, Clock, Briefcase } from "lucide-react"
 
 interface JobDetail {
@@ -20,74 +21,51 @@ interface JobDetail {
   workingHours?: string
 }
 
-// 실제로는 데이터베이스에서 가져올 데이터
-const getJobById = (id: string): JobDetail | null => {
-  const jobs: JobDetail[] = [
-    {
-      id: 1,
-      title: "시니어 인테리어 디자이너",
-      department: "디자인팀",
-      type: "정규직",
-      experience: "경력 5년 이상",
-      location: "서울 강남구",
-      deadline: "2024-04-30",
-      description:
-        "상업공간 및 주거공간 디자인 전문가를 모집합니다. 창의적 사고와 실무 경험을 바탕으로 고품질의 디자인을 구현할 수 있는 분을 찾습니다.",
-      requirements: [
-        "인테리어 디자인 관련 학과 졸업",
-        "AutoCAD, 3ds Max, SketchUp 등 디자인 프로그램 능숙",
-        "상업공간 디자인 경력 5년 이상",
-        "프로젝트 관리 경험",
-        "원활한 커뮤니케이션 능력",
-      ],
-      responsibilities: [
-        "상업공간 및 주거공간 인테리어 디자인",
-        "클라이언트 미팅 및 요구사항 분석",
-        "3D 모델링 및 렌더링 작업",
-        "시공 현장 감리 및 품질 관리",
-        "프로젝트 일정 관리",
-      ],
-      benefits: ["4대보험 완비", "연봉 협상 가능", "교육비 지원", "유연근무제", "성과급 지급"],
-      images: ["/placeholder.svg?height=400&width=600", "/placeholder.svg?height=400&width=600"],
-      salary: "5,000만원 ~ 7,000만원",
-      workingHours: "09:00 ~ 18:00 (주 40시간)",
-    },
-    {
-      id: 2,
-      title: "주니어 인테리어 디자이너",
-      department: "디자인팀",
-      type: "정규직",
-      experience: "신입/경력 1-3년",
-      location: "서울 강남구",
-      deadline: "2024-04-15",
-      description:
-        "인테리어 디자인에 열정이 있는 주니어 디자이너를 모집합니다. 성장 가능성과 학습 의지가 있는 분들의 지원을 환영합니다.",
-      requirements: [
-        "인테리어 디자인 관련 학과 졸업",
-        "AutoCAD, SketchUp 기본 사용 가능",
-        "포트폴리오 필수",
-        "적극적인 학습 의지",
-        "팀워크 중시",
-      ],
-      responsibilities: [
-        "시니어 디자이너 업무 보조",
-        "도면 작성 및 수정",
-        "자료 조사 및 정리",
-        "클라이언트 미팅 참석",
-        "현장 방문 및 체크",
-      ],
-      benefits: ["4대보험 완비", "신입 교육 프로그램", "멘토링 시스템", "교육비 지원", "경력 개발 지원"],
-      images: ["/placeholder.svg?height=400&width=600"],
-      salary: "3,000만원 ~ 4,000만원",
-      workingHours: "09:00 ~ 18:00 (주 40시간)",
-    },
-  ]
-
-  return jobs.find((j) => j.id === Number.parseInt(id)) || null
+const formatDate = (value?: string | null) => {
+  if (!value) return "상시채용"
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleDateString("ko-KR")
 }
 
-export default function JobDetailPage({ params }: { params: { id: string } }) {
-  const job = getJobById(params.id)
+const toJobDetail = (recruit: RecruitResponse): JobDetail => ({
+  id: recruit.recruitId,
+  title: recruit.position,
+  department: recruit.department ?? "미정",
+  type: recruit.empType ?? "미정",
+  experience: recruit.careerLevel ?? "협의",
+  location: recruit.location ?? "미정",
+  deadline: formatDate(recruit.deadline),
+  description: recruit.description ?? "상세 설명이 등록되지 않았습니다.",
+  requirements: [
+    recruit.careerLevel ? `경력 조건: ${recruit.careerLevel}` : "경력 조건 협의",
+    recruit.department ? `소속 부서: ${recruit.department}` : "소속 부서 협의",
+    "관련 직무 수행 역량 및 협업 능력",
+  ],
+  responsibilities: recruit.description
+    ? recruit.description
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .slice(0, 5)
+    : ["채용 공고 상세 업무는 면접/상세 안내를 통해 전달됩니다."],
+  benefits: ["4대보험", "경조사 지원", "교육/성장 지원", "성과 기반 보상"],
+  images: recruit.imageUrl ? [resolveAssetUrl(recruit.imageUrl)] : [],
+  workingHours: "09:00 ~ 18:00 (주 40시간)",
+})
+
+export default async function JobDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }> | { id: string }
+}) {
+  const resolvedParams = await Promise.resolve(params)
+  let job: JobDetail | null = null
+  try {
+    job = toJobDetail(await recruitApi.getOne(resolvedParams.id))
+  } catch {
+    job = null
+  }
 
   if (!job) {
     return (
@@ -163,7 +141,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                 )}
                 <div className="pt-4">
                   <Button asChild className="w-full bg-black text-white hover:bg-gray-800">
-                    <Link href="/recruit/apply">지원하기</Link>
+                  <Link href={`/recruit/apply?recruitId=${job.id}`}>지원하기</Link>
                   </Button>
                 </div>
               </div>
@@ -245,7 +223,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
           <p className="text-gray-600 mb-8">GIGA Interior와 함께 성장할 기회를 놓치지 마세요</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="bg-black text-white hover:bg-gray-800">
-              <Link href="/recruit/apply">지원하기</Link>
+              <Link href={`/recruit/apply?recruitId=${job.id}`}>지원하기</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
               <Link href="/contact">문의하기</Link>

@@ -1,0 +1,90 @@
+.mode-btn {
+  color: #64748b;
+}
+
+.mode-btn.active {
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.split-btn.active {
+  box-shadow: 0 1px 2px rgba(2, 132, 199, 0.12);
+}
+
+#dropZone.dragover {
+  border-color: #0ea5e9;
+  background: #eff6ff;
+}
+
+.file-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.5rem;
+  align-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0.75rem;
+}
+
+.file-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.file-icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  margin-right: 0.5rem;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.file-name {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.file-size {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.mini-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.75rem;
+}
+
+.mini-btn:hover {
+  background: #f8fafc;
+}
+
+.mini-btn:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.remove-btn {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.75rem;
+}
+
+.remove-btn:hover {
+  background: #f8fafc;
+}

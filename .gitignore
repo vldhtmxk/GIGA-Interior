@@ -1,0 +1,3 @@
+# Local build artifacts
+pdf-workbench-electron/node_modules/
+pdf-workbench-electron/dist/

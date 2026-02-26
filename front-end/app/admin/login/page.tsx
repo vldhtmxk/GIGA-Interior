@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { env } from "@/lib/env"
+import { adminAuthApi } from "@/lib/api"
 
 export default function AdminLoginPage() {
   const [credentials, setCredentials] = useState({
@@ -16,12 +18,36 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("")
   const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
 
-    // 간단한 로그인 검증 (실제로는 서버에서 처리)
-    if (credentials.username === "admin" && credentials.password === "giga2024") {
-      localStorage.setItem("adminAuth", "true")
+    try {
+      const result = await adminAuthApi.login(credentials)
+      localStorage.setItem(env.adminAuthStorageKey, result.accessToken)
+      router.push("/admin")
+      return
+    } catch (apiError) {
+      // Fall through to optional mock login when enabled (local-only convenience)
+      if (!env.enableMockAdminLogin) {
+        setError(apiError instanceof Error ? apiError.message : "로그인에 실패했습니다.")
+        return
+      }
+    }
+
+    // 개발용 mock 로그인 fallback (API 미구현/미기동 시 로컬 개발용)
+    const mockLoginEnabled = env.enableMockAdminLogin
+    const mockUsername = env.mockAdminUsername
+    const mockPassword = env.mockAdminPassword
+
+    if (
+      mockLoginEnabled &&
+      mockUsername &&
+      mockPassword &&
+      credentials.username === mockUsername &&
+      credentials.password === mockPassword
+    ) {
+      localStorage.setItem(env.adminAuthStorageKey, "mock")
       router.push("/admin")
     } else {
       setError("아이디 또는 비밀번호가 올바르지 않습니다.")
@@ -64,6 +90,12 @@ export default function AdminLoginPage() {
             </div>
 
             {error && <div className="text-red-600 text-sm">{error}</div>}
+
+            {!env.enableMockAdminLogin && (
+              <div className="text-xs text-gray-500">
+                개발 중 임시 로그인 사용 시 `NEXT_PUBLIC_ENABLE_MOCK_ADMIN_LOGIN=true`와 mock 계정을 `.env.local`에 설정하세요.
+              </div>
+            )}
 
             <Button type="submit" className="w-full bg-black text-white hover:bg-gray-800">
               로그인

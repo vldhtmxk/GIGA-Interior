@@ -3,9 +3,11 @@ package com.demo.domain.ceo.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @Table(name = "ceo_info")
 public class CeoInfo {

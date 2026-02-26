@@ -2,15 +2,16 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Upload, X } from "lucide-react"
+import { applicantApi, recruitApi, type RecruitResponse } from "@/lib/api"
 
 export default function ApplyPage() {
   const [formData, setFormData] = useState({
-    position: "",
+    recruitId: "",
     name: "",
     email: "",
     phone: "",
@@ -23,11 +24,88 @@ export default function ApplyPage() {
   })
 
   const [files, setFiles] = useState<File[]>([])
+  const [positions, setPositions] = useState<RecruitResponse[]>([])
+  const [isLoadingPositions, setIsLoadingPositions] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    let cancelled = false
+    setIsLoadingPositions(true)
+    recruitApi
+      .getAll()
+      .then((items) => {
+        if (cancelled) return
+        setPositions(items)
+      })
+      .catch((e) => {
+        if (cancelled) return
+        setError(e instanceof Error ? e.message : "채용 공고 목록을 불러오지 못했습니다.")
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingPositions(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    const recruitIdFromQuery = new URLSearchParams(window.location.search).get("recruitId")
+    if (recruitIdFromQuery) {
+      setFormData((prev) => ({ ...prev, recruitId: recruitIdFromQuery }))
+    }
+  }, [])
+
+  const selectedRecruit = useMemo(
+    () => positions.find((item) => String(item.recruitId) === formData.recruitId) ?? null,
+    [positions, formData.recruitId],
+  )
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Application submitted:", formData, files)
-    alert("지원서가 성공적으로 제출되었습니다. 검토 후 연락드리겠습니다.")
+    if (!formData.recruitId) {
+      setError("지원할 채용공고를 선택해주세요.")
+      return
+    }
+    setIsSubmitting(true)
+    setError("")
+    setSuccessMessage("")
+    try {
+      await applicantApi.create({
+        recruitId: Number(formData.recruitId),
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        experience: formData.experience,
+        education: formData.education,
+        portfolio: formData.portfolio,
+        motivation: formData.motivation,
+        salary: formData.salary,
+        startDate: formData.startDate,
+        files,
+      })
+      setSuccessMessage("지원서가 성공적으로 제출되었습니다. 검토 후 연락드리겠습니다.")
+      setFormData({
+        recruitId: formData.recruitId,
+        name: "",
+        email: "",
+        phone: "",
+        experience: "",
+        education: "",
+        portfolio: "",
+        motivation: "",
+        salary: "",
+        startDate: "",
+      })
+      setFiles([])
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "지원서 제출에 실패했습니다.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -48,14 +126,6 @@ export default function ApplyPage() {
     setFiles(files.filter((_, i) => i !== index))
   }
 
-  const positions = [
-    "시니어 인테리어 디자이너",
-    "주니어 인테리어 디자이너",
-    "프로젝트 매니저",
-    "3D 모델링 전문가",
-    "기타",
-  ]
-
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -73,6 +143,12 @@ export default function ApplyPage() {
       {/* Application Form */}
       <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {error && <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+          {successMessage && (
+            <div className="mb-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+              {successMessage}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Position Selection */}
             <div className="bg-gray-50 p-8 rounded-lg">
@@ -83,19 +159,25 @@ export default function ApplyPage() {
                 </label>
                 <select
                   id="position"
-                  name="position"
-                  value={formData.position}
+                  name="recruitId"
+                  value={formData.recruitId}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                 >
-                  <option value="">포지션을 선택해주세요</option>
+                  <option value="">{isLoadingPositions ? "불러오는 중..." : "포지션을 선택해주세요"}</option>
                   {positions.map((position) => (
-                    <option key={position} value={position}>
-                      {position}
+                    <option key={position.recruitId} value={position.recruitId}>
+                      {position.position}
                     </option>
                   ))}
                 </select>
+                {selectedRecruit && (
+                  <p className="mt-2 text-sm text-gray-500">
+                    {selectedRecruit.department ?? "미정"} / {selectedRecruit.empType ?? "미정"} /{" "}
+                    {selectedRecruit.location ?? "미정"}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -303,8 +385,8 @@ export default function ApplyPage() {
 
             {/* Submit Button */}
             <div className="text-center">
-              <Button type="submit" size="lg" className="bg-black text-white hover:bg-gray-800 px-12">
-                지원서 제출하기
+              <Button type="submit" size="lg" className="bg-black text-white hover:bg-gray-800 px-12" disabled={isSubmitting}>
+                {isSubmitting ? "제출 중..." : "지원서 제출하기"}
               </Button>
               <p className="text-sm text-gray-500 mt-4">지원서 제출 후 1-2주 내에 검토 결과를 연락드리겠습니다.</p>
             </div>

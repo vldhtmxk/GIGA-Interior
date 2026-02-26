@@ -1,7 +1,33 @@
 import Image from "next/image"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { clientPartnerApi, resolveAssetUrl } from "@/lib/api"
 
-export default function ClientsPage() {
+type ClientItem = {
+  clientId: number
+  name: string
+  category: "client" | "partner"
+  logoUrl: string | null
+  description: string | null
+}
+
+export default async function ClientsPage() {
+  let dbClients: ClientItem[] = []
+  try {
+    const rows = await clientPartnerApi.getAll()
+    dbClients = rows.map((row) => ({
+      clientId: row.clientId,
+      name: row.name,
+      category: row.category?.toLowerCase() === "partner" ? "partner" : "client",
+      logoUrl: row.logoUrl,
+      description: row.description,
+    }))
+  } catch {
+    dbClients = []
+  }
+
+  const clientRows = dbClients.filter((item) => item.category === "client")
+  const partnerRows = dbClients.filter((item) => item.category === "partner")
+
   return (
     <main className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -39,22 +65,28 @@ export default function ClientsPage() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-              {clients.map((client, index) => (
-                <div key={index} className="flex flex-col items-center">
+              {clientRows.map((client) => (
+                <div key={client.clientId} className="flex flex-col items-center">
                   <div className="w-32 h-32 bg-slate-50 rounded-lg flex items-center justify-center p-4 mb-4">
                     <Image
-                      src={client.logo || "/placeholder.svg"}
+                      src={resolveAssetUrl(client.logoUrl) || "/placeholder.svg"}
                       alt={client.name}
                       width={100}
                       height={50}
                       className="max-w-full max-h-full object-contain"
+                      unoptimized
                     />
                   </div>
                   <h3 className="font-semibold text-center">{client.name}</h3>
-                  <p className="text-sm text-muted-foreground text-center">{client.industry}</p>
+                  <p className="text-sm text-muted-foreground text-center">{client.description || "클라이언트"}</p>
                 </div>
               ))}
             </div>
+            {clientRows.length === 0 && (
+              <div className="mt-8 border border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-500">
+                등록된 클라이언트가 없습니다.
+              </div>
+            )}
 
             <div className="mt-16 space-y-12">
               <h2 className="text-3xl font-bold mb-8 text-center">클라이언트 후기</h2>
@@ -98,32 +130,29 @@ export default function ClientsPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {partners.map((category, index) => (
-                <div key={index} className="bg-slate-50 p-8 rounded-lg">
-                  <h3 className="text-xl font-semibold mb-6">{category.category}</h3>
-                  <ul className="space-y-4">
-                    {category.companies.map((company, idx) => (
-                      <li key={idx} className="flex items-center">
-                        <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2 mr-4">
-                          <Image
-                            src={company.logo || "/placeholder.svg"}
-                            alt={company.name}
-                            width={40}
-                            height={40}
-                            className="max-w-full max-h-full object-contain"
-                          />
-                        </div>
-                        <div>
-                          <h4 className="font-medium">{company.name}</h4>
-                          <p className="text-sm text-muted-foreground">{company.specialty}</p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {partnerRows.map((partner) => (
+                <div key={partner.clientId} className="bg-slate-50 p-8 rounded-lg">
+                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center p-2 mb-4">
+                    <Image
+                      src={resolveAssetUrl(partner.logoUrl) || "/placeholder.svg"}
+                      alt={partner.name}
+                      width={48}
+                      height={48}
+                      className="max-w-full max-h-full object-contain"
+                      unoptimized
+                    />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">{partner.name}</h3>
+                  <p className="text-sm text-muted-foreground">{partner.description || "파트너사"}</p>
                 </div>
               ))}
             </div>
+            {partnerRows.length === 0 && (
+              <div className="mt-8 border border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-500">
+                등록된 파트너사가 없습니다.
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </section>
@@ -158,49 +187,6 @@ export default function ClientsPage() {
 }
 
 // Sample data
-const clients = [
-  {
-    name: "모던 리빙",
-    industry: "주거 공간",
-    logo: "/placeholder.svg?height=200&width=200&query=minimal logo for modern living",
-  },
-  {
-    name: "카페 세레니티",
-    industry: "카페 & 레스토랑",
-    logo: "/placeholder.svg?height=200&width=200&query=minimal logo for cafe serenity",
-  },
-  {
-    name: "테크 이노베이션",
-    industry: "IT 기업",
-    logo: "/placeholder.svg?height=200&width=200&query=minimal logo for tech innovation",
-  },
-  {
-    name: "럭셔리 부티크",
-    industry: "패션 & 리테일",
-    logo: "/placeholder.svg?height=200&width=200&query=minimal logo for luxury boutique",
-  },
-  {
-    name: "그린 스페이스",
-    industry: "환경 친화적 주거",
-    logo: "/placeholder.svg?height=200&width=200&query=minimal logo for green space",
-  },
-  {
-    name: "크리에이티브 스튜디오",
-    industry: "디자인 에이전시",
-    logo: "/placeholder.svg?height=200&width=200&query=minimal logo for creative studio",
-  },
-  {
-    name: "웰니스 센터",
-    industry: "헬스 & 웰빙",
-    logo: "/placeholder.svg?height=200&width=200&query=minimal logo for wellness center",
-  },
-  {
-    name: "디지털 허브",
-    industry: "코워킹 스페이스",
-    logo: "/placeholder.svg?height=200&width=200&query=minimal logo for digital hub",
-  },
-]
-
 const testimonials = [
   {
     name: "김지현",
@@ -229,69 +215,6 @@ const testimonials = [
     quote:
       "우리 브랜드의 아이덴티티를 완벽하게 반영한 쇼룸 디자인에 매우 만족합니다. 고급스러우면서도 편안한 쇼핑 경험을 제공할 수 있게 되었습니다.",
     avatar: "/placeholder.svg?height=100&width=100&query=professional man portrait with suit",
-  },
-]
-
-const partners = [
-  {
-    category: "건설 & 시공",
-    companies: [
-      {
-        name: "모던 빌드",
-        specialty: "인테리어 시공",
-        logo: "/placeholder.svg?height=100&width=100&query=construction company logo",
-      },
-      {
-        name: "프리미엄 컨스트럭션",
-        specialty: "고급 주택 시공",
-        logo: "/placeholder.svg?height=100&width=100&query=premium construction logo",
-      },
-      {
-        name: "에코 빌더스",
-        specialty: "친환경 건축",
-        logo: "/placeholder.svg?height=100&width=100&query=eco builders logo",
-      },
-    ],
-  },
-  {
-    category: "가구 & 조명",
-    companies: [
-      {
-        name: "디자인 퍼니처",
-        specialty: "맞춤형 가구",
-        logo: "/placeholder.svg?height=100&width=100&query=furniture design logo",
-      },
-      {
-        name: "라이트 스튜디오",
-        specialty: "조명 솔루션",
-        logo: "/placeholder.svg?height=100&width=100&query=lighting studio logo",
-      },
-      {
-        name: "우드 크래프트",
-        specialty: "목공 가구",
-        logo: "/placeholder.svg?height=100&width=100&query=wood craft logo",
-      },
-    ],
-  },
-  {
-    category: "자재 & 마감재",
-    companies: [
-      {
-        name: "럭셔리 스톤",
-        specialty: "대리석 & 석재",
-        logo: "/placeholder.svg?height=100&width=100&query=luxury stone logo",
-      },
-      {
-        name: "모던 타일",
-        specialty: "타일 & 세라믹",
-        logo: "/placeholder.svg?height=100&width=100&query=modern tile logo",
-      },
-      {
-        name: "에코 페인트",
-        specialty: "친환경 페인트",
-        logo: "/placeholder.svg?height=100&width=100&query=eco paint logo",
-      },
-    ],
   },
 ]
 

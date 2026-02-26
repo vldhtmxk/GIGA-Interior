@@ -1,6 +1,21 @@
 import Image from "next/image"
+import { aboutApi, resolveAssetUrl } from "@/lib/api"
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  let aboutData: Awaited<ReturnType<typeof aboutApi.get>> | null = null
+  try {
+    aboutData = await aboutApi.get()
+  } catch {
+    aboutData = null
+  }
+
+  const ceo = aboutData?.ceo
+  const histories = (aboutData?.histories?.length ? aboutData.histories : history).map((item) => ({
+    year: String(item.year ?? ""),
+    title: item.title,
+    description: item.description ?? "",
+  }))
+
   return (
     <main className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -19,30 +34,27 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* CEO Message */}
+      {/* Representative Message */}
       <section className="py-20 container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row gap-12 items-center">
             <div className="relative w-64 h-64 rounded-full overflow-hidden flex-shrink-0">
               <Image
-                src="/placeholder.svg?height=400&width=400&query=professional female interior designer portrait"
-                alt="CEO Portrait"
+                src={resolveAssetUrl(ceo?.image) || "/placeholder.svg?height=400&width=400&query=professional female interior designer portrait"}
+                alt={ceo?.name || "대표 사진"}
                 fill
                 className="object-cover"
+                unoptimized
               />
             </div>
             <div>
-              <h2 className="text-3xl font-bold mb-6">CEO 메시지</h2>
-              <p className="text-lg mb-4">안녕하세요, 인테리어 스튜디오의 대표 김민지입니다.</p>
-              <p className="text-muted-foreground mb-4">
-                우리 스튜디오는 2010년 설립 이후, 공간이 가진 잠재력을 최대한 끌어내는 디자인을 추구해 왔습니다. 우리는
-                단순히 아름다운 공간을 만드는 것을 넘어, 그 공간을 사용하는 사람들의 삶의 질을 향상시키는 디자인을
-                지향합니다.
-              </p>
-              <p className="text-muted-foreground">
-                각 프로젝트마다 고객의 니즈와 공간의 특성을 깊이 이해하고, 그에 맞는 최적의 솔루션을 제공하기 위해
-                노력하고 있습니다. 우리와 함께 당신의 공간에 새로운 가치를 더해보세요.
-              </p>
+              <h2 className="text-3xl font-bold mb-6">대표 메시지</h2>
+              <p className="text-lg mb-4">안녕하세요, {ceo?.title || "인테리어 스튜디오 대표"} {ceo?.name || "김민지"}입니다.</p>
+              <div className="text-muted-foreground whitespace-pre-line">
+                {ceo?.message ||
+                  `우리 스튜디오는 2010년 설립 이후, 공간이 가진 잠재력을 최대한 끌어내는 디자인을 추구해 왔습니다.
+우리는 단순히 아름다운 공간을 만드는 것을 넘어, 그 공간을 사용하는 사람들의 삶의 질을 향상시키는 디자인을 지향합니다.`}
+              </div>
             </div>
           </div>
         </div>
@@ -80,7 +92,7 @@ export default function AboutPage() {
           <h2 className="text-3xl font-bold mb-12 text-center">회사 연혁</h2>
 
           <div className="space-y-12">
-            {history.map((item, index) => (
+            {histories.map((item, index) => (
               <div key={index} className="flex flex-col md:flex-row gap-6">
                 <div className="md:w-1/4">
                   <div className="text-2xl font-bold">{item.year}</div>

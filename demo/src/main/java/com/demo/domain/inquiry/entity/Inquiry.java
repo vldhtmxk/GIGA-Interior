@@ -1,5 +1,8 @@
 package com.demo.domain.inquiry.entity;
 
+import java.time.LocalDateTime;
+
+import com.demo.domain.inquiry.enums.InquiryStatus;
 import com.demo.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,4 +38,18 @@ public class Inquiry extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String message;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30, nullable = false)
+    @Builder.Default
+    private InquiryStatus status = InquiryStatus.NEW;
+
+    @Column(name = "admin_memo", columnDefinition = "TEXT")
+    private String adminMemo;
+
+    @Column(name = "replied_at")
+    private LocalDateTime repliedAt;
+
+    @Column(name = "replied_by", length = 100)
+    private String repliedBy;
 }

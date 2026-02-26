@@ -7,6 +7,7 @@ import com.demo.domain.applicant.entity.Applicant;
 import com.demo.global.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,10 +31,12 @@ public class Recruit extends BaseEntity {
     private String location;
     private LocalDateTime deadline;
     private String description;
+    @Column(length = 500)
+    private String imageUrl;
     private int isVisible;
     private int hit;
 
-    @OneToMany(mappedBy = "recruitId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Applicant> applicants;
 
     

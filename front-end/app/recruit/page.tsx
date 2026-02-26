@@ -1,54 +1,34 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { recruitApi, resolveAssetUrl, type RecruitResponse } from "@/lib/api"
 import { MapPin, Clock, Users, Heart, Briefcase, GraduationCap } from "lucide-react"
 
-export default function RecruitPage() {
-  const positions = [
-    {
-      id: 1,
-      title: "시니어 인테리어 디자이너",
-      department: "디자인팀",
-      type: "정규직",
-      experience: "경력 5년 이상",
-      location: "서울 강남구",
-      deadline: "2024-04-30",
-      description:
-        "상업공간 및 주거공간 디자인 전문가를 모집합니다. 창의적 사고와 실무 경험을 바탕으로 고품질의 디자인을 구현할 수 있는 분을 찾습니다.",
-    },
-    {
-      id: 2,
-      title: "주니어 인테리어 디자이너",
-      department: "디자인팀",
-      type: "정규직",
-      experience: "신입/경력 1-3년",
-      location: "서울 강남구",
-      deadline: "2024-04-15",
-      description:
-        "인테리어 디자인에 열정이 있는 주니어 디자이너를 모집합니다. 성장 가능성과 학습 의지가 있는 분들의 지원을 환영합니다.",
-    },
-    {
-      id: 3,
-      title: "프로젝트 매니저",
-      department: "PM팀",
-      type: "정규직",
-      experience: "경력 3년 이상",
-      location: "서울 강남구",
-      deadline: "2024-05-15",
-      description:
-        "인테리어 프로젝트의 전체적인 관리와 조율을 담당할 PM을 모집합니다. 뛰어난 커뮤니케이션 능력과 프로젝트 관리 경험이 필요합니다.",
-    },
-    {
-      id: 4,
-      title: "3D 모델링 전문가",
-      department: "디자인팀",
-      type: "정규직",
-      experience: "경력 2년 이상",
-      location: "서울 강남구",
-      deadline: "2024-04-20",
-      description:
-        "3D 모델링 및 렌더링 전문가를 모집합니다. 3ds Max, V-Ray, SketchUp 등의 프로그램에 능숙한 분을 찾습니다.",
-    },
-  ]
+const formatDate = (value?: string | null) => {
+  if (!value) return "상시채용"
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleDateString("ko-KR")
+}
+
+const toCard = (item: RecruitResponse) => ({
+  id: item.recruitId,
+  title: item.position,
+  department: item.department ?? "미정",
+  type: item.empType ?? "미정",
+  experience: item.careerLevel ?? "협의",
+  location: item.location ?? "미정",
+  deadline: formatDate(item.deadline),
+  description: item.description ?? "채용 상세 내용은 공고 상세 페이지에서 확인해주세요.",
+  imageUrl: resolveAssetUrl(item.imageUrl),
+})
+
+export default async function RecruitPage() {
+  let positions: ReturnType<typeof toCard>[] = []
+  try {
+    positions = (await recruitApi.getAll()).map(toCard)
+  } catch {
+    positions = []
+  }
 
   const benefits = [
     {
@@ -177,6 +157,16 @@ export default function RecruitPage() {
                       </h3>
                     </Link>
 
+                    {position.imageUrl && (
+                      <div className="mb-4">
+                        <img
+                          src={position.imageUrl}
+                          alt={position.title}
+                          className="h-40 w-full max-w-md rounded-md object-cover border"
+                        />
+                      </div>
+                    )}
+
                     <p className="text-gray-600 leading-relaxed mb-6">{position.description}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-500">
@@ -203,6 +193,11 @@ export default function RecruitPage() {
                 </div>
               </div>
             ))}
+            {positions.length === 0 && (
+              <div className="border border-dashed border-gray-300 rounded-lg p-10 text-center text-gray-500">
+                현재 등록된 채용 공고가 없습니다.
+              </div>
+            )}
           </div>
         </div>
       </section>

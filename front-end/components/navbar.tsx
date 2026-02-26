@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils"
 
 const navItems = [
   { name: "소개", href: "/about" },
-  { name: "브랜드 스토리", href: "/brand-story" },
   { name: "포트폴리오", href: "/portfolio" },
   { name: "프로세스", href: "/process" },
   { name: "문의", href: "/contact" },
