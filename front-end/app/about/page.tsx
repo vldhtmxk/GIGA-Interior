@@ -21,7 +21,7 @@ export default async function AboutPage() {
       {/* Hero Section */}
       <section className="relative w-full h-[50vh] flex items-center justify-center overflow-hidden">
         <Image
-          src="/placeholder.svg?height=1080&width=1920&query=modern interior design studio with team working"
+          src="/menu-hero/about.svg"
           alt="About Our Studio"
           fill
           priority

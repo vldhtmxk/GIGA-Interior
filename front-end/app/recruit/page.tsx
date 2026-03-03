@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { recruitApi, resolveAssetUrl, type RecruitResponse } from "@/lib/api"
 import { MapPin, Clock, Users, Heart, Briefcase, GraduationCap } from "lucide-react"
@@ -75,17 +76,17 @@ export default async function RecruitPage() {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold text-black mb-6">RECRUIT</h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+      <section className="relative w-full h-[50vh] flex items-center justify-center overflow-hidden">
+        <Image src="/menu-hero/recruit.svg" alt="Recruit" fill priority className="object-cover" />
+        <div className="absolute inset-0 bg-black/45" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+          <h1 className="text-5xl font-bold mb-6">RECRUIT</h1>
+          <p className="text-xl max-w-3xl mx-auto mb-8">
               성장하는 브랜드와 함께할 인재를 찾습니다. GIGA Interior에서 당신의 꿈을 펼쳐보세요.
-            </p>
-            <Button asChild size="lg" className="bg-black text-white hover:bg-gray-800">
-              <Link href="/recruit/apply">지원하기</Link>
-            </Button>
-          </div>
+          </p>
+          <Button asChild size="lg" className="bg-white text-black hover:bg-white/90">
+            <Link href="/recruit/apply">지원하기</Link>
+          </Button>
         </div>
       </section>
 

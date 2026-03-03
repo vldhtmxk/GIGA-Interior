@@ -63,7 +63,7 @@ export default async function PortfolioPage() {
     <main className="flex flex-col min-h-screen">
       <section className="relative w-full h-[50vh] flex items-center justify-center overflow-hidden">
         <Image
-          src="/placeholder.svg?height=1080&width=1920&query=collection of modern interior design projects"
+          src="/menu-hero/portfolio.svg"
           alt="Portfolio"
           fill
           priority

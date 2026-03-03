@@ -63,7 +63,7 @@ export default function ContactPage() {
       {/* Hero Section */}
       <section className="relative w-full h-[40vh] flex items-center justify-center overflow-hidden">
         <Image
-          src="/placeholder.svg?height=1080&width=1920&query=modern interior design studio contact desk"
+          src="/menu-hero/contact.svg"
           alt="Contact Us"
           fill
           priority

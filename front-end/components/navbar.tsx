@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
@@ -19,6 +19,20 @@ const navItems = [
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
+  }, [mobileMenuOpen])
+
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [pathname])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur">
@@ -37,7 +51,7 @@ export default function Navbar() {
               href={item.href}
               className={cn(
                 "text-sm font-medium transition-colors hover:text-black/80",
-                pathname === item.href ? "text-black" : "text-muted-foreground",
+                isActive(item.href) ? "text-black" : "text-muted-foreground",
               )}
             >
               {item.name}
@@ -46,7 +60,13 @@ export default function Navbar() {
         </nav>
 
         {/* Mobile Menu Button */}
-        <button type="button" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+        <button
+          type="button"
+          className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border border-gray-200"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-nav"
+        >
           {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           <span className="sr-only">Toggle menu</span>
         </button>
@@ -54,34 +74,25 @@ export default function Navbar() {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden">
-          <div className="fixed inset-0 z-50 bg-white">
-            <div className="flex h-16 items-center justify-between px-4 border-b">
-              <div className="text-xl font-bold tracking-tight">INTERIOR STUDIO</div>
-              <button type="button" onClick={() => setMobileMenuOpen(false)}>
-                <X className="h-6 w-6" />
-                <span className="sr-only">Close menu</span>
-              </button>
-            </div>
-            <nav className="mt-8 px-4">
-              <ul className="space-y-4">
-                {navItems.map((item) => (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "block py-2 text-base font-medium transition-colors hover:text-black/80",
-                        pathname === item.href ? "text-black" : "text-muted-foreground",
-                      )}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {item.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
+        <div id="mobile-nav" className="md:hidden border-t bg-white">
+          <nav className="px-4 py-4">
+            <ul className="space-y-2">
+              {navItems.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex items-center justify-between rounded-lg px-4 py-4 text-lg font-semibold transition-colors",
+                      isActive(item.href) ? "bg-black text-white" : "text-gray-800 hover:bg-gray-100",
+                    )}
+                  >
+                    {item.name}
+                    <span className={cn("text-sm", isActive(item.href) ? "text-white/80" : "text-gray-400")}>›</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       )}
     </header>

@@ -9,7 +9,7 @@ export default function ProcessPage() {
       {/* Hero Section */}
       <section className="relative w-full h-[50vh] flex items-center justify-center overflow-hidden">
         <Image
-          src="/placeholder.svg?height=1080&width=1920&query=interior design process with blueprints and materials"
+          src="/menu-hero/process.svg"
           alt="Our Process"
           fill
           priority

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" role="img" aria-label="Recruit hero">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="45%" stop-color="#1f2937"/>
+      <stop offset="100%" stop-color="#374151"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#g)"/>
+  <g fill="#ffffff14">
+    <rect x="220" y="260" width="300" height="420" rx="16"/>
+    <rect x="580" y="220" width="300" height="460" rx="16"/>
+    <rect x="940" y="280" width="300" height="400" rx="16"/>
+    <rect x="1300" y="230" width="300" height="450" rx="16"/>
+  </g>
+  <path d="M0 860 C380 780 620 920 960 840 C1300 760 1520 920 1920 840 V1080 H0Z" fill="#ffffff12"/>
+</svg>

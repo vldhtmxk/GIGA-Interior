@@ -33,7 +33,7 @@ export default async function ClientsPage() {
       {/* Hero Section */}
       <section className="relative w-full h-[50vh] flex items-center justify-center overflow-hidden">
         <Image
-          src="/placeholder.svg?height=1080&width=1920&query=business meeting in modern office with clients"
+          src="/menu-hero/clients.svg"
           alt="Our Clients"
           fill
           priority

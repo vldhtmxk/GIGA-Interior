@@ -11,7 +11,7 @@ export default function BoardPage() {
       {/* Hero Section */}
       <section className="relative w-full h-[40vh] flex items-center justify-center overflow-hidden">
         <Image
-          src="/placeholder.svg?height=1080&width=1920&query=modern interior design blog and news"
+          src="/menu-hero/board.svg"
           alt="Board"
           fill
           priority

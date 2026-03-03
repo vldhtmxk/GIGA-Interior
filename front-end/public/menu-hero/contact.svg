@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" role="img" aria-label="Contact hero">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1020"/>
+      <stop offset="45%" stop-color="#1d4d4f"/>
+      <stop offset="100%" stop-color="#164e63"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#g)"/>
+  <g fill="#ffffff14">
+    <rect x="220" y="240" width="500" height="380" rx="24"/>
+    <rect x="820" y="210" width="880" height="500" rx="24"/>
+  </g>
+  <g stroke="#ffffff2a" stroke-width="5" fill="none">
+    <path d="M300 350 L500 490 L690 350"/>
+    <path d="M900 380 H1600"/>
+    <path d="M900 470 H1520"/>
+    <path d="M900 560 H1460"/>
+  </g>
+  <circle cx="1650" cy="180" r="120" fill="#ffffff12"/>
+</svg>
