@@ -22,13 +22,15 @@ export default function Navbar() {
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
   useEffect(() => {
-    if (!mobileMenuOpen) return
-    const originalOverflow = document.body.style.overflow
-    document.body.style.overflow = "hidden"
-    return () => {
-      document.body.style.overflow = originalOverflow
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileMenuOpen(false)
+      }
     }
-  }, [mobileMenuOpen])
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   useEffect(() => {
     setMobileMenuOpen(false)
@@ -74,7 +76,7 @@ export default function Navbar() {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div id="mobile-nav" className="md:hidden border-t bg-white">
+        <div id="mobile-nav" className="md:hidden border-t bg-white max-h-[70vh] overflow-y-auto">
           <nav className="px-4 py-4">
             <ul className="space-y-2">
               {navItems.map((item) => (
