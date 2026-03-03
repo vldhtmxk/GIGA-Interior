@@ -210,11 +210,11 @@ export default function ContactPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="residential">주거 공간</SelectItem>
-                              <SelectItem value="commercial">상업 공간</SelectItem>
-                              <SelectItem value="office">오피스</SelectItem>
-                              <SelectItem value="hospitality">호텔 & 리조트</SelectItem>
-                              <SelectItem value="other">기타</SelectItem>
+                              <SelectItem value="주거 공간">주거 공간</SelectItem>
+                              <SelectItem value="상업 공간">상업 공간</SelectItem>
+                              <SelectItem value="오피스">오피스</SelectItem>
+                              <SelectItem value="호텔 & 리조트">호텔 & 리조트</SelectItem>
+                              <SelectItem value="기타">기타</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -235,11 +235,11 @@ export default function ContactPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="under-10m">1천만원 미만</SelectItem>
-                              <SelectItem value="10m-30m">1천만원 - 3천만원</SelectItem>
-                              <SelectItem value="30m-50m">3천만원 - 5천만원</SelectItem>
-                              <SelectItem value="50m-100m">5천만원 - 1억원</SelectItem>
-                              <SelectItem value="over-100m">1억원 이상</SelectItem>
+                              <SelectItem value="1천만원 미만">1천만원 미만</SelectItem>
+                              <SelectItem value="1천만원 - 3천만원">1천만원 - 3천만원</SelectItem>
+                              <SelectItem value="3천만원 - 5천만원">3천만원 - 5천만원</SelectItem>
+                              <SelectItem value="5천만원 - 1억원">5천만원 - 1억원</SelectItem>
+                              <SelectItem value="1억원 이상">1억원 이상</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
