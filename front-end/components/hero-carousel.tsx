@@ -1,69 +1,35 @@
 'use client'
 
-import { useKeenSlider } from "keen-slider/react"
-import { KeenSliderPlugin } from "keen-slider"
-import "keen-slider/keen-slider.min.css"
-import { useRef } from "react"
-import { useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import type { TouchEvent } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { ArrowRight } from "lucide-react"
 import { resolveAssetUrl, type MainCarouselResponse } from "@/lib/api"
-
-// 🔁 자동 슬라이드 플러그인 정의
-const Autoplay: KeenSliderPlugin = (slider) => {
-  let timeout: ReturnType<typeof setTimeout>
-  let mouseOver = false
-
-  function clearNextTimeout() {
-    clearTimeout(timeout)
-  }
-
-  function nextTimeout() {
-    clearTimeout(timeout)
-    if (mouseOver) return
-    timeout = setTimeout(() => {
-      slider.next()
-    }, 4000) // 슬라이드 간격 4초
-  }
-
-  slider.on("created", () => {
-    slider.container.addEventListener("mouseover", () => {
-      mouseOver = true
-      clearNextTimeout()
-    })
-    slider.container.addEventListener("mouseout", () => {
-      mouseOver = false
-      nextTimeout()
-    })
-    nextTimeout()
-  })
-  slider.on("dragStarted", clearNextTimeout)
-  slider.on("animationEnded", nextTimeout)
-  slider.on("updated", nextTimeout)
-}
 
 const defaultSlides = [
   {
-    image: "/minimalist-living-room.png",
-    title: "공간에 영감을 불어넣는 디자인",
-    subtitle: "당신의 공간을 아름답고 기능적인 예술 작품으로 변화시켜 드립니다",
-    buttonText: "견적 문의하기",
+    image:
+      "https://images.unsplash.com/photo-1672927936377-97d1be3976cd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBpbnRlcmlvciUyMGRlc2lnbiUyMGxpdmluZyUyMHJvb20lMjBtb2Rlcm58ZW58MXx8fHwxNzcyNTkxMTIzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+    title: "Space That Tells Your Story",
+    subtitle: "We craft refined interiors where proportion, light, and material become one experience.",
+    buttonText: "프로젝트 시작하기",
     buttonLink: "/contact",
   },
   {
-    image: "/banner2.jpg",
-    title: "프리미엄 오피스 솔루션",
-    subtitle: "업무 공간을 효율적이면서도 세련되게 구성해드립니다",
-    buttonText: "견적 문의하기",
+    image:
+      "https://images.unsplash.com/photo-1668026694348-b73c5eb5e299?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBraXRjaGVuJTIwaW50ZXJpb3IlMjBkZXNpZ258ZW58MXx8fHwxNzcyNTQ5NjkxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+    title: "Luxury Living, Thoughtfully Designed",
+    subtitle: "From private residences to signature spaces, we deliver timeless design with clear intent.",
+    buttonText: "프로젝트 시작하기",
     buttonLink: "/contact",
   },
   {
-    image: "/banner3.jpg",
-    title: "맞춤형 쇼룸 디자인",
-    subtitle: "브랜드 아이덴티티를 살린 고급 쇼룸 연출",
-    buttonText: "견적 문의하기",
+    image:
+      "https://images.unsplash.com/photo-1703355685639-d558d1b0f63e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb250ZW1wb3JhcnklMjBvZmZpY2UlMjBpbnRlcmlvciUyMGRlc2lnbnxlbnwxfHx8fDE3NzI1NDk4MjF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    title: "Commercial Spaces With Character",
+    subtitle: "Build environments that strengthen brand identity and elevate customer experience.",
+    buttonText: "프로젝트 시작하기",
     buttonLink: "/contact",
   },
 ]
@@ -78,34 +44,74 @@ type HeroSlide = {
 
 export default function HeroCarousel({ slides }: { slides?: HeroSlide[] | MainCarouselResponse[] }) {
   const [currentSlide, setCurrentSlide] = useState(0)
-  const normalizedSlides: HeroSlide[] =
-    (slides ?? []).length > 0
-      ? (slides ?? []).map((slide: any) => ({
-          image: resolveAssetUrl(slide.backgroundUrl ?? slide.image) || "/placeholder.svg",
-          title: slide.title,
-          subtitle: slide.subtitle,
-          buttonText: slide.buttonText,
-          buttonLink: slide.buttonLink,
-        }))
-      : defaultSlides
+  const touchStartX = useRef<number | null>(null)
+  const normalizedSlides: HeroSlide[] = useMemo(
+    () =>
+      (slides ?? []).length > 0
+        ? (slides ?? []).map((slide: any) => ({
+            image: resolveAssetUrl(slide.backgroundUrl ?? slide.image) || "/placeholder.svg",
+            title: slide.title,
+            subtitle: slide.subtitle,
+            buttonText: slide.buttonText,
+            buttonLink: slide.buttonLink,
+          }))
+        : defaultSlides,
+    [slides],
+  )
 
-  const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
-    loop: true,
-    slides: { perView: 1 },
-    defaultAnimation: {
-      duration: 1200, // 부드럽고 느리게
-      easing: (t) => 1 - Math.pow(1 - t, 3), 
-    },
-    slideChanged(s) {
-      setCurrentSlide(s.track.details.rel)
-    },
-  }, [Autoplay])
+  const slideCount = normalizedSlides.length || 1
+
+  useEffect(() => {
+    if (slideCount <= 1) return
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slideCount)
+    }, 7000)
+    return () => clearInterval(timer)
+  }, [slideCount])
+
+  useEffect(() => {
+    if (currentSlide >= slideCount) {
+      setCurrentSlide(0)
+    }
+  }, [currentSlide, slideCount])
+
+  const goPrev = () => setCurrentSlide((prev) => (prev - 1 + slideCount) % slideCount)
+  const goNext = () => setCurrentSlide((prev) => (prev + 1) % slideCount)
+
+  const onTouchStart = (e: TouchEvent<HTMLDivElement>) => {
+    touchStartX.current = e.changedTouches[0]?.clientX ?? null
+  }
+
+  const onTouchEnd = (e: TouchEvent<HTMLDivElement>) => {
+    if (touchStartX.current === null) return
+    const endX = e.changedTouches[0]?.clientX ?? touchStartX.current
+    const delta = endX - touchStartX.current
+    touchStartX.current = null
+    if (Math.abs(delta) < 40) return
+    if (delta > 0) goPrev()
+    else goNext()
+  }
 
   return (
-    <section className="relative w-full h-[52vh] min-h-[360px] max-h-[620px] sm:h-[58vh] lg:h-[62vh] overflow-hidden">
-      <div ref={sliderRef} className="keen-slider h-full">
+    <section className="relative h-[90vh] min-h-[560px] w-full overflow-hidden">
+      <div
+        className="h-full"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        <div
+          className="flex h-full transition-transform duration-700 ease-out"
+          style={{
+            width: `${slideCount * 100}%`,
+            transform: `translate3d(-${(currentSlide * 100) / slideCount}%, 0, 0)`,
+          }}
+        >
         {normalizedSlides.map((slide, i) => (
-          <div key={i} className="keen-slider__slide relative flex items-center justify-center">
+          <div
+            key={i}
+            className="relative flex h-full shrink-0 items-center justify-center"
+            style={{ width: `${100 / slideCount}%` }}
+          >
             <Image
               src={slide.image}
               alt={slide.title}
@@ -113,33 +119,51 @@ export default function HeroCarousel({ slides }: { slides?: HeroSlide[] | MainCa
               className="object-cover"
               priority={i === 0}
             />
-            <div className="absolute inset-0 bg-black/40" />
-            <div className="relative z-10 text-center text-white px-4 max-w-3xl">
-              <h1 className="text-3xl md:text-5xl font-bold mb-4">{slide.title}</h1>
-              <p className="text-lg md:text-xl mb-6 font-light">{slide.subtitle}</p>
-              <Button asChild className="bg-white text-black hover:bg-white/90">
-                <Link href={slide.buttonLink || "/contact"}>
-                  {slide.buttonText || "견적 문의하기"} <ArrowRight className="ml-2 h-4 w-4" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/65 via-[#0a0a0a]/30 to-[#0a0a0a]" />
+            <div className="relative z-10 mx-auto flex h-full w-full max-w-[1400px] items-end px-5 pb-24 sm:px-6 lg:px-16">
+              <div>
+                <p
+                  className="giga-item-rise mb-5 text-[10px] uppercase tracking-[0.38em] text-[#c9a96e]"
+                  style={{ animationDelay: "80ms" }}
+                >
+                  GIGA Interior Studio
+                </p>
+                <h1
+                  className="giga-display giga-item-rise mb-6 max-w-[18ch] break-words text-[clamp(1.8rem,7vw,5.2rem)] font-light leading-[1.03] text-white"
+                  style={{ animationDelay: "180ms" }}
+                >
+                  {slide.title}
+                </h1>
+                {slide.subtitle && (
+                  <p
+                    className="giga-item-rise mb-10 max-w-2xl break-words text-sm leading-relaxed text-white/70 sm:text-base lg:text-lg"
+                    style={{ animationDelay: "280ms" }}
+                  >
+                    {slide.subtitle}
+                  </p>
+                )}
+                <Link
+                  href={slide.buttonLink || "/contact"}
+                  className="giga-item-rise inline-flex items-center gap-3 bg-[#c9a96e] px-8 py-4 text-[11px] uppercase tracking-[0.2em] text-[#0a0a0a] transition-all duration-300 hover:bg-white"
+                  style={{ animationDelay: "360ms" }}
+                >
+                  {slide.buttonText || "프로젝트 시작하기"} <ArrowRight className="h-4 w-4" />
                 </Link>
-              </Button>
+              </div>
             </div>
           </div>
         ))}
+        </div>
       </div>
 
-      {/* 좌우 화살표 */}
-      <button
-        onClick={() => instanceRef.current?.prev()}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/70 hover:bg-white rounded-full p-2 shadow"
-      >
-        <ChevronLeft className="text-black w-6 h-6" />
-      </button>
-      <button
-        onClick={() => instanceRef.current?.next()}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/70 hover:bg-white rounded-full p-2 shadow"
-      >
-        <ChevronRight className="text-black w-6 h-6" />
-      </button>
+      <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+        {normalizedSlides.map((_, idx) => (
+          <span
+            key={idx}
+            className={`h-1.5 transition-all ${idx === currentSlide ? "w-8 bg-[#c9a96e]" : "w-4 bg-white/40"}`}
+          />
+        ))}
+      </div>
     </section>
   )
 }

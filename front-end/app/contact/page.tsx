@@ -1,17 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { useEffect, useRef, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { Mail, Phone, MapPin, Download } from "lucide-react"
+import { CheckCircle, Clock, Mail, MapPin, Phone } from "lucide-react"
 import { inquiryApi } from "@/lib/api"
+import { cn } from "@/lib/utils"
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "이름을 입력해주세요" }),
@@ -22,11 +17,42 @@ const formSchema = z.object({
   message: z.string().min(10, { message: "메시지를 10자 이상 입력해주세요" }),
 })
 
+type FormValues = z.infer<typeof formSchema>
+
+function useInViewOnce<T extends HTMLElement>(threshold = 0.15) {
+  const ref = useRef<T | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    if (!ref.current || isVisible) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold },
+    )
+    observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [isVisible, threshold])
+
+  return { ref, isVisible }
+}
+
 export default function ContactPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState("")
+  const header = useInViewOnce<HTMLElement>(0.1)
+  const body = useInViewOnce<HTMLElement>(0.1)
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -38,9 +64,8 @@ export default function ContactPage() {
     },
   })
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormValues) {
     setSubmitError("")
-
     try {
       await inquiryApi.create({
         name: values.name,
@@ -50,256 +75,218 @@ export default function ContactPage() {
         budgetRange: values.budget,
         message: values.message,
       })
-
       setIsSubmitted(true)
-      form.reset()
+      reset()
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "문의 접수 중 오류가 발생했습니다.")
     }
   }
 
   return (
-    <main className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="relative w-full h-[40vh] flex items-center justify-center overflow-hidden">
-        <Image
-          src="/menu-hero/contact.svg"
-          alt="Contact Us"
-          fill
-          priority
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="relative z-10 container mx-auto px-4 text-center text-white">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">문의하기</h1>
-          <p className="text-xl max-w-2xl mx-auto">프로젝트에 대해 이야기하고 싶으신가요? 지금 연락주세요</p>
-        </div>
+    <main className="giga-public-surface min-h-screen pt-24">
+      <section ref={header.ref} className="mx-auto max-w-[1400px] px-6 py-20 lg:px-16">
+        <p
+          className={cn(
+            "mb-4 text-[10px] uppercase tracking-[0.4em] text-[#c9a96e] transition-all",
+            header.isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
+          )}
+          style={{ transitionDuration: "860ms" }}
+        >
+          Contact
+        </p>
+        <h1
+          className={cn(
+            "giga-display mb-8 text-[clamp(2.8rem,7vw,7rem)] font-light leading-none text-white transition-all",
+            header.isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0",
+          )}
+          style={{ transitionDuration: "980ms" }}
+        >
+          Let's create
+          <br />
+          <em className="not-italic text-[#c9a96e]">together</em>
+        </h1>
       </section>
 
-      {/* Contact Form & Info */}
-      <section className="py-20 container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* Contact Information */}
+      <section ref={body.ref} className="mx-auto grid max-w-[1400px] grid-cols-1 gap-16 px-6 pb-24 lg:grid-cols-5 lg:px-16">
+        <div
+          className={cn(
+            "order-2 space-y-12 transition-all duration-[980ms] lg:col-span-2",
+            body.isVisible ? "translate-x-0 opacity-100" : "translate-x-8 opacity-0",
+          )}
+        >
           <div>
-            <h2 className="text-3xl font-bold mb-6">연락처 정보</h2>
-            <p className="text-muted-foreground mb-8">
-              궁금한 점이 있으시거나 프로젝트에 대해 상담을 원하시면 아래 연락처로 문의해 주세요. 또는 문의 양식을
-              작성하시면 빠른 시일 내에 답변 드리겠습니다.
-            </p>
-
-            <div className="space-y-6 mb-8">
-              <div className="flex items-start">
-                <MapPin className="h-6 w-6 mr-4 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold mb-1">주소</h3>
-                  <p className="text-muted-foreground">
-                    서울특별시 강남구 테헤란로 123
-                    <br />
-                    인테리어 스튜디오 빌딩 5층
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start">
-                <Mail className="h-6 w-6 mr-4 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold mb-1">이메일</h3>
-                  <p className="text-muted-foreground">info@interiorstudio.com</p>
-                </div>
-              </div>
-
-              <div className="flex items-start">
-                <Phone className="h-6 w-6 mr-4 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold mb-1">전화</h3>
-                  <p className="text-muted-foreground">02-123-4567</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <h3 className="font-semibold mb-3">영업 시간</h3>
-              <div className="space-y-2 text-muted-foreground">
-                <p>월요일 - 금요일: 오전 9시 - 오후 6시</p>
-                <p>토요일: 오전 10시 - 오후 3시 (예약제)</p>
-                <p>일요일: 휴무</p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-3">포트폴리오 다운로드</h3>
-              <Button className="flex items-center">
-                <Download className="mr-2 h-4 w-4" />
-                포트폴리오 PDF 다운로드
-              </Button>
-            </div>
+            <p className="mb-6 text-[10px] uppercase tracking-[0.35em] text-[#c9a96e]">Contact Info</p>
+            <ul className="space-y-6">
+              {[
+                { icon: MapPin, label: "Address", value: "서울특별시 강남구 테헤란로 123\nGIGA Tower 15F" },
+                { icon: Phone, label: "Phone", value: "02-1234-5678" },
+                { icon: Mail, label: "Email", value: "hello@giga-interior.kr" },
+                { icon: Clock, label: "Hours", value: "평일 09:00 - 18:00\n토요일 10:00 - 15:00 (예약 필수)" },
+              ].map(({ icon: Icon, label, value }) => (
+                <li key={label} className="flex gap-4">
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center border border-white/10">
+                    <Icon size={13} className="text-[#c9a96e]" />
+                  </div>
+                  <div>
+                    <p className="mb-1 text-[10px] uppercase tracking-[0.2em] text-white/30">{label}</p>
+                    <p className="whitespace-pre-line text-sm text-white/60">{value}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Contact Form */}
           <div>
-            <h2 className="text-3xl font-bold mb-6">견적 문의</h2>
-
-            {isSubmitted ? (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-                <h3 className="text-xl font-semibold mb-2">문의가 접수되었습니다!</h3>
-                <p className="text-muted-foreground mb-4">
-                  귀하의 문의가 성공적으로 접수되었습니다. 영업일 기준 1-2일 내에 답변 드리겠습니다.
-                </p>
-                <Button onClick={() => setIsSubmitted(false)} variant="outline">
-                  새 문의하기
-                </Button>
-              </div>
-            ) : (
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>이름</FormLabel>
-                          <FormControl>
-                            <Input placeholder="홍길동" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>이메일</FormLabel>
-                          <FormControl>
-                            <Input placeholder="example@email.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>전화번호</FormLabel>
-                        <FormControl>
-                          <Input placeholder="01012345678" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="projectType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>프로젝트 유형</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="프로젝트 유형 선택" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="주거 공간">주거 공간</SelectItem>
-                              <SelectItem value="상업 공간">상업 공간</SelectItem>
-                              <SelectItem value="오피스">오피스</SelectItem>
-                              <SelectItem value="호텔 & 리조트">호텔 & 리조트</SelectItem>
-                              <SelectItem value="기타">기타</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="budget"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>예산 범위</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="예산 범위 선택" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="1천만원 미만">1천만원 미만</SelectItem>
-                              <SelectItem value="1천만원 - 3천만원">1천만원 - 3천만원</SelectItem>
-                              <SelectItem value="3천만원 - 5천만원">3천만원 - 5천만원</SelectItem>
-                              <SelectItem value="5천만원 - 1억원">5천만원 - 1억원</SelectItem>
-                              <SelectItem value="1억원 이상">1억원 이상</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="message"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>메시지</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="프로젝트에 대해 자세히 알려주세요."
-                            className="min-h-[120px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {submitError && <p className="text-sm text-red-600">{submitError}</p>}
-
-                  <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? "문의 접수 중..." : "문의하기"}
-                  </Button>
-                </form>
-              </Form>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Map Section */}
-      <section className="py-12 bg-slate-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-8 text-center">오시는 길</h2>
-          <div className="max-w-4xl mx-auto h-[400px] bg-white rounded-lg overflow-hidden">
-            <div className="w-full h-full relative">
-              <Image
-                src="/placeholder.svg?height=800&width=1200&query=map of seoul gangnam area"
-                alt="Location Map"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white p-4 rounded-lg shadow-lg">
-                  <p className="font-semibold">인테리어 스튜디오</p>
-                  <p className="text-sm text-muted-foreground">서울특별시 강남구 테헤란로 123</p>
+            <p className="mb-6 text-[10px] uppercase tracking-[0.35em] text-[#c9a96e]">Process</p>
+            <div className="space-y-4">
+              {[
+                { step: "01", text: "상담 신청 및 초기 미팅" },
+                { step: "02", text: "현장 방문 및 니즈 파악" },
+                { step: "03", text: "컨셉 디자인 제안" },
+                { step: "04", text: "실시도면 및 시공" },
+                { step: "05", text: "준공 및 사후 관리" },
+              ].map(({ step, text }) => (
+                <div key={step} className="group flex items-center gap-4">
+                  <span className="w-6 text-xs text-[#c9a96e]/40">{step}</span>
+                  <div className="h-px flex-1 bg-white/5 transition-colors group-hover:bg-[#c9a96e]/20" />
+                  <p className="text-sm text-white/40 transition-colors group-hover:text-white/65">{text}</p>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
+
+        <div
+          className={cn(
+            "order-1 transition-all duration-[980ms] lg:col-span-3",
+            body.isVisible ? "translate-x-0 opacity-100" : "-translate-x-8 opacity-0",
+          )}
+        >
+          {isSubmitted ? (
+            <div className="flex h-full flex-col items-center justify-center border border-white/10 py-20 text-center">
+              <CheckCircle size={48} className="mb-6 text-[#c9a96e]" />
+              <h2 className="giga-display mb-4 text-3xl font-light text-white">상담 신청이 완료되었습니다</h2>
+              <p className="max-w-sm text-sm leading-relaxed text-white/40">
+                빠른 시일 내에 담당자가 연락을 드릴 예정입니다. 일반적으로 영업일 기준 1-2일 내에 연락드립니다.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsSubmitted(false)}
+                className="mt-8 border border-[#c9a96e]/60 px-6 py-2 text-xs uppercase tracking-[0.2em] text-[#c9a96e] transition-colors hover:bg-[#c9a96e] hover:text-[#0a0a0a]"
+              >
+                새 문의하기
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/30">
+                    성함 <span className="text-[#c9a96e]">*</span>
+                  </label>
+                  <input
+                    {...register("name")}
+                    className="w-full border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/20 focus:border-[#c9a96e]/50"
+                    placeholder="홍길동"
+                  />
+                  {errors.name && <p className="mt-2 text-xs text-red-400">{errors.name.message}</p>}
+                </div>
+                <div>
+                  <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/30">
+                    연락처 <span className="text-[#c9a96e]">*</span>
+                  </label>
+                  <input
+                    {...register("phone")}
+                    className="w-full border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/20 focus:border-[#c9a96e]/50"
+                    placeholder="01012345678"
+                  />
+                  {errors.phone && <p className="mt-2 text-xs text-red-400">{errors.phone.message}</p>}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/30">
+                  이메일 <span className="text-[#c9a96e]">*</span>
+                </label>
+                <input
+                  {...register("email")}
+                  className="w-full border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/20 focus:border-[#c9a96e]/50"
+                  placeholder="example@email.com"
+                />
+                {errors.email && <p className="mt-2 text-xs text-red-400">{errors.email.message}</p>}
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/30">
+                    서비스 유형 <span className="text-[#c9a96e]">*</span>
+                  </label>
+                  <select
+                    {...register("projectType")}
+                    className="w-full cursor-pointer appearance-none border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#c9a96e]/50"
+                  >
+                    <option value="">선택하세요</option>
+                    <option value="주거 인테리어">주거 인테리어</option>
+                    <option value="상업 인테리어">상업 인테리어</option>
+                    <option value="오피스 인테리어">오피스 인테리어</option>
+                    <option value="호텔·숙박">호텔·숙박</option>
+                    <option value="기타">기타</option>
+                  </select>
+                  {errors.projectType && <p className="mt-2 text-xs text-red-400">{errors.projectType.message}</p>}
+                </div>
+                <div>
+                  <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/30">
+                    예산 범위 <span className="text-[#c9a96e]">*</span>
+                  </label>
+                  <select
+                    {...register("budget")}
+                    className="w-full cursor-pointer appearance-none border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#c9a96e]/50"
+                  >
+                    <option value="">선택하세요</option>
+                    <option value="1천만원 미만">1천만원 미만</option>
+                    <option value="1천만원 - 3천만원">1천만원 - 3천만원</option>
+                    <option value="3천만원 - 5천만원">3천만원 - 5천만원</option>
+                    <option value="5천만원 - 1억원">5천만원 - 1억원</option>
+                    <option value="1억원 이상">1억원 이상</option>
+                  </select>
+                  {errors.budget && <p className="mt-2 text-xs text-red-400">{errors.budget.message}</p>}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/30">
+                  문의 내용 <span className="text-[#c9a96e]">*</span>
+                </label>
+                <textarea
+                  {...register("message")}
+                  rows={5}
+                  className="w-full resize-none border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/20 focus:border-[#c9a96e]/50"
+                  placeholder="원하시는 스타일, 참고 이미지 URL, 기타 요청 사항 등을 자유롭게 작성해 주세요."
+                />
+                {errors.message && <p className="mt-2 text-xs text-red-400">{errors.message.message}</p>}
+              </div>
+
+              {submitError && <p className="text-sm text-red-400">{submitError}</p>}
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-[#c9a96e] py-4 text-[11px] font-medium uppercase tracking-[0.3em] text-[#0a0a0a] transition-colors duration-300 hover:bg-white disabled:opacity-70"
+              >
+                {isSubmitting ? "문의 접수 중..." : "무료 상담 신청하기"}
+              </button>
+              <p className="text-center text-xs text-white/20">제출 시 개인정보 처리방침에 동의하는 것으로 간주됩니다.</p>
+            </form>
+          )}
+        </div>
       </section>
+
+      <div className="flex h-64 items-center justify-center border-t border-white/5 bg-[#111]">
+        <div className="text-center">
+          <MapPin size={24} className="mx-auto mb-3 text-[#c9a96e]" />
+          <p className="text-xs tracking-widest text-white/30">서울특별시 강남구 테헤란로 123</p>
+        </div>
+      </div>
     </main>
   )
 }

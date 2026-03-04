@@ -1,5 +1,5 @@
-import Image from "next/image"
-import { aboutApi, resolveAssetUrl } from "@/lib/api"
+import AboutSections from "@/components/about-sections"
+import { aboutApi } from "@/lib/api"
 
 export default async function AboutPage() {
   let aboutData: Awaited<ReturnType<typeof aboutApi.get>> | null = null
@@ -9,150 +9,16 @@ export default async function AboutPage() {
     aboutData = null
   }
 
-  const ceo = aboutData?.ceo
+  const ceo = aboutData?.ceo ?? null
   const histories = (aboutData?.histories?.length ? aboutData.histories : history).map((item) => ({
     year: String(item.year ?? ""),
     title: item.title,
     description: item.description ?? "",
   }))
 
-  return (
-    <main className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="relative w-full h-[50vh] flex items-center justify-center overflow-hidden">
-        <Image
-          src="/menu-hero/about.svg"
-          alt="About Our Studio"
-          fill
-          priority
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="relative z-10 container mx-auto px-4 text-center text-white">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">우리 스튜디오 소개</h1>
-          <p className="text-xl max-w-2xl mx-auto">공간의 가치를 높이는 디자인 스튜디오</p>
-        </div>
-      </section>
-
-      {/* Representative Message */}
-      <section className="py-20 container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-12 items-center">
-            <div className="relative w-64 h-64 rounded-full overflow-hidden flex-shrink-0">
-              <Image
-                src={resolveAssetUrl(ceo?.image) || "/placeholder.svg?height=400&width=400&query=professional female interior designer portrait"}
-                alt={ceo?.name || "대표 사진"}
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold mb-6">대표 메시지</h2>
-              <p className="text-lg mb-4">안녕하세요, {ceo?.title || "인테리어 스튜디오 대표"} {ceo?.name || "김민지"}입니다.</p>
-              <div className="text-muted-foreground whitespace-pre-line">
-                {ceo?.message ||
-                  `우리 스튜디오는 2010년 설립 이후, 공간이 가진 잠재력을 최대한 끌어내는 디자인을 추구해 왔습니다.
-우리는 단순히 아름다운 공간을 만드는 것을 넘어, 그 공간을 사용하는 사람들의 삶의 질을 향상시키는 디자인을 지향합니다.`}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Vision & Mission */}
-      <section className="py-20 bg-slate-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-3xl font-bold mb-6">비전 & 미션</h2>
-            <p className="text-xl">우리는 공간을 통해 사람들의 삶에 긍정적인 변화를 가져오는 것을 목표로 합니다.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-            <div className="bg-white p-8 rounded-lg shadow-sm">
-              <h3 className="text-2xl font-semibold mb-4">비전</h3>
-              <p className="text-muted-foreground">
-                모든 공간이 그 안에서 생활하는 사람들에게 영감을 주고, 기능적이면서도 아름다운 환경을 제공하는 세상을
-                만들어 나갑니다.
-              </p>
-            </div>
-            <div className="bg-white p-8 rounded-lg shadow-sm">
-              <h3 className="text-2xl font-semibold mb-4">미션</h3>
-              <p className="text-muted-foreground">
-                혁신적인 디자인 접근 방식과 세심한 디테일 관리를 통해 고객의 기대를 뛰어넘는 공간을 창조합니다.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* History */}
-      <section className="py-20 container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold mb-12 text-center">회사 연혁</h2>
-
-          <div className="space-y-12">
-            {histories.map((item, index) => (
-              <div key={index} className="flex flex-col md:flex-row gap-6">
-                <div className="md:w-1/4">
-                  <div className="text-2xl font-bold">{item.year}</div>
-                </div>
-                <div className="md:w-3/4 border-l-2 pl-6 pb-6">
-                  <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground">{item.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Core Values */}
-      <section className="py-20 bg-slate-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-3xl font-bold mb-6">핵심 가치</h2>
-            <p className="text-xl">우리의 모든 프로젝트와 의사결정을 이끄는 핵심 가치입니다.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {coreValues.map((value, index) => (
-              <div key={index} className="bg-white p-8 rounded-lg shadow-sm text-center">
-                <div className="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
-                  {index + 1}
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{value.title}</h3>
-                <p className="text-muted-foreground">{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Team */}
-      <section className="py-20 container mx-auto px-4">
-        <div className="max-w-4xl mx-auto text-center mb-16">
-          <h2 className="text-3xl font-bold mb-6">디자인 팀</h2>
-          <p className="text-xl">창의적이고 열정적인 전문가들이 모여 최고의 디자인을 만들어냅니다.</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
-          {team.map((member, index) => (
-            <div key={index} className="text-center">
-              <div className="relative w-48 h-48 rounded-full overflow-hidden mx-auto mb-4">
-                <Image src={member.photo || "/placeholder.svg"} alt={member.name} fill className="object-cover" />
-              </div>
-              <h3 className="text-lg font-semibold">{member.name}</h3>
-              <p className="text-sm text-muted-foreground">{member.position}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-    </main>
-  )
+  return <AboutSections ceo={ceo} histories={histories} values={coreValues} team={team} />
 }
 
-// Sample data
 const history = [
   {
     year: "2010",
@@ -188,16 +54,20 @@ const history = [
 
 const coreValues = [
   {
-    title: "혁신",
+    title: "Authenticity",
     description: "항상 새로운 디자인 접근 방식을 탐구하고 창의적인 솔루션을 개발합니다.",
   },
   {
-    title: "정밀함",
+    title: "Craftsmanship",
     description: "모든 디테일에 세심한 주의를 기울여 완벽한 결과물을 만들어냅니다.",
   },
   {
-    title: "지속가능성",
+    title: "Innovation",
     description: "환경을 고려한 재료 선택과 에너지 효율적인 디자인을 추구합니다.",
+  },
+  {
+    title: "Sustainability",
+    description: "지속 가능한 공간 운영을 위한 친환경 소재와 효율적 설계를 적용합니다.",
   },
 ]
 
@@ -223,3 +93,4 @@ const team = [
     photo: "/placeholder.svg?height=300&width=300&query=professional male project manager portrait",
   },
 ]
+
