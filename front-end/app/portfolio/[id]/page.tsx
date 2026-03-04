@@ -1,15 +1,14 @@
 import Image from "next/image"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { portfolioApi, resolveAssetUrl } from "@/lib/api"
 
 const categoryLabel = (value?: string | null) => {
-  if (!value) return "기타"
+  if (!value) return "Other"
   const lower = value.toLowerCase()
-  if (lower.includes("residential") || value.includes("주거")) return "주거 공간"
-  if (lower.includes("commercial") || lower.includes("showroom") || lower.includes("cafe") || value.includes("상업")) return "상업 공간"
-  if (lower.includes("office") || value.includes("오피스") || value.includes("업무")) return "업무 공간"
+  if (lower.includes("residential") || value.includes("주거")) return "Residential"
+  if (lower.includes("commercial") || lower.includes("showroom") || lower.includes("cafe") || value.includes("상업")) return "Commercial"
+  if (lower.includes("office") || value.includes("오피스") || value.includes("업무")) return "Office"
   return value
 }
 
@@ -28,93 +27,127 @@ export default async function ProjectDetailPage({
 
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">프로젝트를 찾을 수 없습니다</h1>
-          <Button asChild><Link href="/portfolio">포트폴리오로 돌아가기</Link></Button>
+      <main className="giga-public-surface flex min-h-screen items-center justify-center px-6 pt-24">
+        <div className="max-w-lg border border-white/10 p-10 text-center">
+          <h1 className="giga-display text-4xl font-light text-white">Project Not Found</h1>
+          <p className="mt-4 text-sm text-white/45">해당 포트폴리오를 찾을 수 없습니다.</p>
+          <Link
+            href="/portfolio"
+            className="mt-8 inline-flex items-center gap-2 border border-[#c9a96e]/60 px-6 py-3 text-[10px] uppercase tracking-[0.22em] text-[#c9a96e] transition-colors hover:bg-[#c9a96e] hover:text-[#0a0a0a]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back To Portfolio
+          </Link>
         </div>
-      </div>
+      </main>
     )
   }
 
   const images = (project.images ?? []).map((img) => resolveAssetUrl(img.imageUrl)).filter(Boolean)
   const heroImage = images[0] || "/placeholder.svg?height=1080&width=1920"
-  const materials = (project.materials ?? "").split(",").map((s) => s.trim()).filter(Boolean)
+  const materials = (project.materials ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
 
   return (
-    <main className="flex flex-col min-h-screen">
-      <section className="relative w-full h-[70vh] flex items-center justify-center overflow-hidden">
-        <Image src={heroImage} alt={project.title} fill priority className="object-cover" />
-        <div className="absolute inset-0 bg-black/30" />
-        <div className="relative z-10 container mx-auto px-4 text-center text-white">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">{project.title}</h1>
-          <p className="text-xl max-w-2xl mx-auto">{categoryLabel(project.category)} | {project.location ?? "위치 미정"}</p>
+    <main className="giga-public-surface min-h-screen pt-24">
+      <section className="mx-auto max-w-[1400px] px-6 py-14 lg:px-16 lg:py-20">
+        <Link
+          href="/portfolio"
+          className="mb-8 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/45 transition-colors hover:text-[#c9a96e]"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back To Portfolio
+        </Link>
+
+        <p className="mb-4 text-[10px] uppercase tracking-[0.36em] text-[#c9a96e] giga-fade-up">Project Detail</p>
+        <h1 className="giga-display giga-fade-up text-[clamp(2.2rem,6vw,5.5rem)] font-light leading-none text-white">
+          {project.title}
+        </h1>
+        <p className="giga-fade-up mt-5 text-sm text-white/45 sm:text-base">
+          {categoryLabel(project.category)} {project.location ? `· ${project.location}` : ""}
+        </p>
+      </section>
+
+      <section className="mx-auto max-w-[1400px] px-6 pb-10 lg:px-16">
+        <div className="relative h-[42vh] overflow-hidden border border-white/10 sm:h-[56vh] lg:h-[72vh]">
+          <Image src={heroImage} alt={project.title} fill priority className="object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/75 via-transparent to-transparent" />
         </div>
       </section>
 
-      <section className="py-20 container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex justify-between items-center mb-12">
-            <Button variant="outline" asChild>
-              <Link href="/portfolio"><ArrowLeft className="mr-2 h-4 w-4" />모든 프로젝트</Link>
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <div>
-              <h3 className="font-semibold mb-2">프로젝트 정보</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><span className="font-medium text-foreground">위치:</span> {project.location ?? "-"}</li>
-                <li><span className="font-medium text-foreground">연도:</span> {project.year ?? "-"}</li>
-                <li><span className="font-medium text-foreground">면적:</span> {project.area ?? "-"}</li>
-                <li><span className="font-medium text-foreground">카테고리:</span> {categoryLabel(project.category)}</li>
-                <li><span className="font-medium text-foreground">클라이언트:</span> {project.clientName ?? "-"}</li>
-                <li><span className="font-medium text-foreground">기간:</span> {project.duration ? `${project.duration}개월` : "-"}</li>
-              </ul>
+      <section className="mx-auto max-w-[1400px] px-6 pb-16 lg:px-16 lg:pb-20">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          {[
+            { label: "Category", value: categoryLabel(project.category) },
+            { label: "Year", value: project.year ? String(project.year) : "-" },
+            { label: "Area", value: project.area ?? "-" },
+            { label: "Client", value: project.clientName ?? "-" },
+            { label: "Duration", value: project.duration ? `${project.duration} months` : "-" },
+            { label: "Location", value: project.location ?? "-" },
+          ].map((item) => (
+            <div key={item.label} className="giga-card-reveal border border-white/10 p-5">
+              <p className="text-[10px] uppercase tracking-[0.24em] text-white/35">{item.label}</p>
+              <p className="mt-3 text-sm text-white/75">{item.value}</p>
             </div>
-            <div className="md:col-span-2">
-              <h3 className="font-semibold mb-2">프로젝트 개요</h3>
-              <p className="text-muted-foreground whitespace-pre-line">{project.description ?? "프로젝트 설명이 없습니다."}</p>
-            </div>
-          </div>
+          ))}
+        </div>
+      </section>
 
-          <div className="space-y-12 mb-16">
-            {project.concept && (
-              <div>
-                <h3 className="text-xl font-semibold mb-4">디자인 컨셉</h3>
-                <p className="text-muted-foreground whitespace-pre-line">{project.concept}</p>
-              </div>
-            )}
-            {project.feature && (
-              <div>
-                <h3 className="text-xl font-semibold mb-4">주요 특징</h3>
-                <p className="text-muted-foreground whitespace-pre-line">{project.feature}</p>
-              </div>
-            )}
-          </div>
+      <section className="mx-auto max-w-[1400px] px-6 pb-20 lg:px-16">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
+          <article className="giga-card-reveal border border-white/10 p-7 lg:p-9">
+            <p className="mb-4 text-[10px] uppercase tracking-[0.28em] text-[#c9a96e]">Overview</p>
+            <p className="whitespace-pre-line text-sm leading-relaxed text-white/50">
+              {project.description ?? "프로젝트 설명이 없습니다."}
+            </p>
+          </article>
 
-          {images.length > 0 && (
-            <div className="space-y-8 mb-16">
-              {images.map((image, index) => (
-                <div key={index} className="relative h-[60vh] w-full rounded-lg overflow-hidden">
-                  <Image src={image} alt={`${project.title} - 이미지 ${index + 1}`} fill className="object-cover" />
-                </div>
+          {project.concept && (
+            <article className="giga-card-reveal border border-white/10 p-7 lg:p-9">
+              <p className="mb-4 text-[10px] uppercase tracking-[0.28em] text-[#c9a96e]">Concept</p>
+              <p className="whitespace-pre-line text-sm leading-relaxed text-white/50">{project.concept}</p>
+            </article>
+          )}
+
+          {project.feature && (
+            <article className="giga-card-reveal border border-white/10 p-7 lg:col-span-2 lg:p-9">
+              <p className="mb-4 text-[10px] uppercase tracking-[0.28em] text-[#c9a96e]">Key Features</p>
+              <p className="whitespace-pre-line text-sm leading-relaxed text-white/50">{project.feature}</p>
+            </article>
+          )}
+        </div>
+      </section>
+
+      {images.length > 0 && (
+        <section className="mx-auto max-w-[1400px] px-6 pb-20 lg:px-16">
+          <p className="mb-6 text-[10px] uppercase tracking-[0.32em] text-[#c9a96e]">Gallery</p>
+          <div className="space-y-4">
+            {images.map((image, index) => (
+              <div key={index} className="giga-card-reveal relative h-[36vh] overflow-hidden border border-white/10 sm:h-[46vh] lg:h-[62vh]">
+                <Image src={image} alt={`${project.title} image ${index + 1}`} fill className="object-cover" />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {materials.length > 0 && (
+        <section className="mx-auto max-w-[1400px] px-6 pb-24 lg:px-16">
+          <div className="border border-white/10 p-8 lg:p-10">
+            <p className="mb-6 text-[10px] uppercase tracking-[0.28em] text-[#c9a96e]">Materials</p>
+            <ul className="grid grid-cols-1 gap-3 text-sm text-white/65 sm:grid-cols-2 lg:grid-cols-3">
+              {materials.map((material, index) => (
+                <li key={index} className="flex items-center gap-3">
+                  <span className="h-1.5 w-1.5 bg-[#c9a96e]" />
+                  <span>{material}</span>
+                </li>
               ))}
-            </div>
-          )}
-
-          {materials.length > 0 && (
-            <div className="mb-16">
-              <h3 className="text-xl font-semibold mb-4">사용 자재</h3>
-              <ul className="space-y-2">
-                {materials.map((material, index) => (
-                  <li key={index} className="flex items-center"><div className="w-2 h-2 bg-black rounded-full mr-3"></div>{material}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </section>
+            </ul>
+          </div>
+        </section>
+      )}
     </main>
   )
 }

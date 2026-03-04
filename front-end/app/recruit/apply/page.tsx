@@ -3,9 +3,6 @@
 import type React from "react"
 
 import { useEffect, useMemo, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Upload, X } from "lucide-react"
 import { applicantApi, recruitApi, type RecruitResponse } from "@/lib/api"
 
@@ -127,272 +124,265 @@ export default function ApplyPage() {
   }
 
   return (
-    <div className="bg-white">
-      {/* Hero Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold text-black mb-6">지원서 작성</h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              GIGA Interior와 함께할 준비가 되셨나요? 아래 양식을 작성하여 지원해주세요.
-            </p>
-          </div>
-        </div>
+    <main className="giga-public-surface min-h-screen pt-24">
+      <section className="mx-auto max-w-[1200px] px-6 py-16 lg:px-16 lg:py-20">
+        <p className="mb-4 text-[10px] uppercase tracking-[0.35em] text-[#c9a96e] giga-fade-up">Careers</p>
+        <h1 className="giga-display giga-fade-up text-[clamp(2.2rem,6vw,5.2rem)] font-light leading-none text-white">
+          지원서 작성
+        </h1>
+        <p className="giga-fade-up mt-5 max-w-2xl text-sm leading-relaxed text-white/45 lg:text-base">
+          GIGA Interior와 함께할 준비가 되셨나요? 아래 정보를 입력해 지원서를 제출해 주세요.
+        </p>
       </section>
 
-      {/* Application Form */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {error && <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
-          {successMessage && (
-            <div className="mb-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-              {successMessage}
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Position Selection */}
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h2 className="text-2xl font-bold text-black mb-6">지원 포지션</h2>
+      <section className="mx-auto max-w-[1200px] px-6 pb-24 lg:px-16">
+        {error && <div className="mb-5 border border-red-400/40 bg-red-400/10 px-4 py-3 text-sm text-red-300">{error}</div>}
+        {successMessage && (
+          <div className="mb-5 border border-emerald-400/40 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-300">{successMessage}</div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <section className="giga-card-reveal border border-white/10 p-6 lg:p-8">
+            <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-[#c9a96e]">지원 포지션</p>
+            <label htmlFor="position" className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/35">
+              포지션 선택 *
+            </label>
+            <select
+              id="position"
+              name="recruitId"
+              value={formData.recruitId}
+              onChange={handleChange}
+              required
+              className="w-full cursor-pointer border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#c9a96e]/50"
+            >
+              <option value="">{isLoadingPositions ? "불러오는 중..." : "포지션을 선택해주세요"}</option>
+              {positions.map((position) => (
+                <option key={position.recruitId} value={position.recruitId}>
+                  {position.position}
+                </option>
+              ))}
+            </select>
+            {selectedRecruit && (
+              <p className="mt-3 text-xs text-white/40">
+                {selectedRecruit.department ?? "미정"} / {selectedRecruit.empType ?? "미정"} / {selectedRecruit.location ?? "미정"}
+              </p>
+            )}
+          </section>
+
+          <section className="giga-card-reveal border border-white/10 p-6 lg:p-8">
+            <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-[#c9a96e]">개인 정보</p>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label htmlFor="position" className="block text-sm font-medium text-black mb-2">
-                  지원하고자 하는 포지션을 선택해주세요 *
+                <label htmlFor="name" className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/35">
+                  이름 *
                 </label>
-                <select
-                  id="position"
-                  name="recruitId"
-                  value={formData.recruitId}
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-                >
-                  <option value="">{isLoadingPositions ? "불러오는 중..." : "포지션을 선택해주세요"}</option>
-                  {positions.map((position) => (
-                    <option key={position.recruitId} value={position.recruitId}>
-                      {position.position}
-                    </option>
-                  ))}
-                </select>
-                {selectedRecruit && (
-                  <p className="mt-2 text-sm text-gray-500">
-                    {selectedRecruit.department ?? "미정"} / {selectedRecruit.empType ?? "미정"} /{" "}
-                    {selectedRecruit.location ?? "미정"}
-                  </p>
-                )}
+                  className="w-full border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#c9a96e]/50"
+                />
               </div>
-            </div>
-
-            {/* Personal Information */}
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h2 className="text-2xl font-bold text-black mb-6">개인 정보</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-black mb-2">
-                    이름 *
-                  </label>
-                  <Input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required />
-                </div>
-
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-black mb-2">
-                    연락처 *
-                  </label>
-                  <Input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} required />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label htmlFor="email" className="block text-sm font-medium text-black mb-2">
-                    이메일 *
-                  </label>
-                  <Input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required />
-                </div>
-              </div>
-            </div>
-
-            {/* Experience & Education */}
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h2 className="text-2xl font-bold text-black mb-6">경력 및 학력</h2>
-              <div className="space-y-6">
-                <div>
-                  <label htmlFor="experience" className="block text-sm font-medium text-black mb-2">
-                    경력 사항 *
-                  </label>
-                  <Textarea
-                    id="experience"
-                    name="experience"
-                    value={formData.experience}
-                    onChange={handleChange}
-                    rows={4}
-                    placeholder="주요 경력사항을 시간순으로 작성해주세요. (회사명, 직책, 근무기간, 주요 업무 등)"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="education" className="block text-sm font-medium text-black mb-2">
-                    학력 사항 *
-                  </label>
-                  <Textarea
-                    id="education"
-                    name="education"
-                    value={formData.education}
-                    onChange={handleChange}
-                    rows={3}
-                    placeholder="최종 학력 및 전공을 작성해주세요."
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Portfolio & Skills */}
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h2 className="text-2xl font-bold text-black mb-6">포트폴리오 및 기술</h2>
-              <div className="space-y-6">
-                <div>
-                  <label htmlFor="portfolio" className="block text-sm font-medium text-black mb-2">
-                    포트폴리오 URL 또는 설명
-                  </label>
-                  <Textarea
-                    id="portfolio"
-                    name="portfolio"
-                    value={formData.portfolio}
-                    onChange={handleChange}
-                    rows={4}
-                    placeholder="온라인 포트폴리오 URL이나 주요 프로젝트에 대한 설명을 작성해주세요."
-                  />
-                </div>
-
-                {/* File Upload */}
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">첨부 파일 (이력서, 포트폴리오 등)</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500 mb-2">파일을 드래그하거나 클릭하여 업로드</p>
-                    <input
-                      type="file"
-                      multiple
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      id="file-upload"
-                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                    />
-                    <label
-                      htmlFor="file-upload"
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
-                    >
-                      파일 선택
-                    </label>
-                    <p className="text-xs text-gray-400 mt-2">
-                      PDF, DOC, DOCX, JPG, PNG 파일만 업로드 가능 (최대 10MB)
-                    </p>
-                  </div>
-
-                  {/* Uploaded Files */}
-                  {files.length > 0 && (
-                    <div className="mt-4 space-y-2">
-                      {files.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between bg-white p-3 rounded border">
-                          <span className="text-sm text-gray-700">{file.name}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeFile(index)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Motivation & Additional Info */}
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h2 className="text-2xl font-bold text-black mb-6">지원 동기 및 기타</h2>
-              <div className="space-y-6">
-                <div>
-                  <label htmlFor="motivation" className="block text-sm font-medium text-black mb-2">
-                    지원 동기 *
-                  </label>
-                  <Textarea
-                    id="motivation"
-                    name="motivation"
-                    value={formData.motivation}
-                    onChange={handleChange}
-                    rows={5}
-                    placeholder="GIGA Interior에 지원하게 된 동기와 포부를 자유롭게 작성해주세요."
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="salary" className="block text-sm font-medium text-black mb-2">
-                      희망 연봉
-                    </label>
-                    <Input
-                      type="text"
-                      id="salary"
-                      name="salary"
-                      value={formData.salary}
-                      onChange={handleChange}
-                      placeholder="예: 5000만원 또는 회사 내규에 따름"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="startDate" className="block text-sm font-medium text-black mb-2">
-                      입사 가능일
-                    </label>
-                    <Input
-                      type="date"
-                      id="startDate"
-                      name="startDate"
-                      value={formData.startDate}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Privacy Agreement */}
-            <div className="bg-gray-50 p-8 rounded-lg">
-              <h2 className="text-2xl font-bold text-black mb-6">개인정보 처리 동의</h2>
-              <div className="space-y-4">
-                <div className="text-sm text-gray-600 leading-relaxed">
-                  <p className="mb-2">GIGA Interior는 채용 과정에서 수집된 개인정보를 다음과 같이 처리합니다:</p>
-                  <ul className="list-disc list-inside space-y-1 ml-4">
-                    <li>수집 목적: 채용 전형 진행 및 결과 통보</li>
-                    <li>수집 항목: 이름, 연락처, 이메일, 경력사항, 학력사항 등</li>
-                    <li>보유 기간: 채용 종료 후 1년</li>
-                    <li>처리 방법: 암호화된 전자파일로 안전하게 보관</li>
-                  </ul>
-                </div>
-
-                <label className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    required
-                    className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
-                  />
-                  <span className="text-sm text-gray-700">개인정보 수집 및 이용에 동의합니다 (필수)</span>
+              <div>
+                <label htmlFor="phone" className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/35">
+                  연락처 *
                 </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  className="w-full border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#c9a96e]/50"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor="email" className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/35">
+                  이메일 *
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#c9a96e]/50"
+                />
               </div>
             </div>
+          </section>
 
-            {/* Submit Button */}
-            <div className="text-center">
-              <Button type="submit" size="lg" className="bg-black text-white hover:bg-gray-800 px-12" disabled={isSubmitting}>
-                {isSubmitting ? "제출 중..." : "지원서 제출하기"}
-              </Button>
-              <p className="text-sm text-gray-500 mt-4">지원서 제출 후 1-2주 내에 검토 결과를 연락드리겠습니다.</p>
+          <section className="giga-card-reveal border border-white/10 p-6 lg:p-8">
+            <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-[#c9a96e]">경력 및 학력</p>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="experience" className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/35">
+                  경력 사항 *
+                </label>
+                <textarea
+                  id="experience"
+                  name="experience"
+                  value={formData.experience}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder="주요 경력사항을 작성해주세요."
+                  required
+                  className="w-full resize-none border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/20 focus:border-[#c9a96e]/50"
+                />
+              </div>
+              <div>
+                <label htmlFor="education" className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/35">
+                  학력 사항 *
+                </label>
+                <textarea
+                  id="education"
+                  name="education"
+                  value={formData.education}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="최종 학력 및 전공을 작성해주세요."
+                  required
+                  className="w-full resize-none border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/20 focus:border-[#c9a96e]/50"
+                />
+              </div>
             </div>
-          </form>
-        </div>
+          </section>
+
+          <section className="giga-card-reveal border border-white/10 p-6 lg:p-8">
+            <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-[#c9a96e]">포트폴리오 및 첨부</p>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="portfolio" className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/35">
+                  포트폴리오 URL 또는 설명
+                </label>
+                <textarea
+                  id="portfolio"
+                  name="portfolio"
+                  value={formData.portfolio}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder="온라인 포트폴리오 URL 또는 프로젝트 설명"
+                  className="w-full resize-none border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/20 focus:border-[#c9a96e]/50"
+                />
+              </div>
+
+              <div className="border border-dashed border-white/20 p-6 text-center">
+                <Upload className="mx-auto mb-3 h-7 w-7 text-white/35" />
+                <p className="mb-3 text-sm text-white/45">파일을 선택해 업로드하세요</p>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="file-upload"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
+                <label
+                  htmlFor="file-upload"
+                  className="inline-flex cursor-pointer items-center border border-[#c9a96e]/60 px-5 py-2 text-[10px] uppercase tracking-[0.2em] text-[#c9a96e] transition-colors hover:bg-[#c9a96e] hover:text-[#0a0a0a]"
+                >
+                  파일 선택
+                </label>
+                <p className="mt-3 text-xs text-white/30">PDF, DOC, DOCX, JPG, PNG (최대 10MB)</p>
+              </div>
+
+              {files.length > 0 && (
+                <div className="space-y-2">
+                  {files.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between border border-white/10 px-3 py-2">
+                      <span className="text-xs text-white/65">{file.name}</span>
+                      <button type="button" onClick={() => removeFile(index)} className="text-white/40 transition-colors hover:text-red-300">
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section className="giga-card-reveal border border-white/10 p-6 lg:p-8">
+            <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-[#c9a96e]">지원 동기 및 추가 정보</p>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="motivation" className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/35">
+                  지원 동기 *
+                </label>
+                <textarea
+                  id="motivation"
+                  name="motivation"
+                  value={formData.motivation}
+                  onChange={handleChange}
+                  rows={5}
+                  required
+                  placeholder="지원 동기와 포부를 작성해주세요."
+                  className="w-full resize-none border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/20 focus:border-[#c9a96e]/50"
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label htmlFor="salary" className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/35">
+                    희망 연봉
+                  </label>
+                  <input
+                    type="text"
+                    id="salary"
+                    name="salary"
+                    value={formData.salary}
+                    onChange={handleChange}
+                    placeholder="예: 5,000만원"
+                    className="w-full border border-white/10 bg-transparent px-4 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/20 focus:border-[#c9a96e]/50"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="startDate" className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-white/35">
+                    입사 가능일
+                  </label>
+                  <input
+                    type="date"
+                    id="startDate"
+                    name="startDate"
+                    value={formData.startDate}
+                    onChange={handleChange}
+                    className="w-full border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#c9a96e]/50"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="giga-card-reveal border border-white/10 p-6 lg:p-8">
+            <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-[#c9a96e]">개인정보 처리 동의</p>
+            <div className="space-y-4 text-sm text-white/45">
+              <ul className="space-y-1">
+                <li>수집 목적: 채용 전형 진행 및 결과 통보</li>
+                <li>수집 항목: 이름, 연락처, 이메일, 경력사항, 학력사항 등</li>
+                <li>보유 기간: 채용 종료 후 1년</li>
+              </ul>
+              <label className="flex items-center gap-3 text-white/65">
+                <input type="checkbox" required className="h-4 w-4 border-white/30 bg-[#0a0a0a]" />
+                <span>개인정보 수집 및 이용에 동의합니다 (필수)</span>
+              </label>
+            </div>
+          </section>
+
+          <div className="pt-4 text-center">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex items-center justify-center bg-[#c9a96e] px-12 py-4 text-[11px] uppercase tracking-[0.24em] text-[#0a0a0a] transition-colors hover:bg-white disabled:opacity-70"
+            >
+              {isSubmitting ? "제출 중..." : "지원서 제출하기"}
+            </button>
+            <p className="mt-4 text-xs text-white/30">지원서 제출 후 1-2주 내에 검토 결과를 연락드리겠습니다.</p>
+          </div>
+        </form>
       </section>
-    </div>
+    </main>
   )
 }

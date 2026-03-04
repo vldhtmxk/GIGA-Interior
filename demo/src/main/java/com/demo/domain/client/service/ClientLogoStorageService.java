@@ -18,7 +18,8 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class ClientLogoStorageService {
 
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp", "gif", "svg");
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp", "gif");
+    private static final long MAX_FILE_SIZE = 5L * 1024 * 1024;
 
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
@@ -27,11 +28,14 @@ public class ClientLogoStorageService {
         if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "업로드할 로고 파일을 선택해주세요.");
         }
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "로고 파일은 5MB 이하만 업로드할 수 있습니다.");
+        }
 
         String originalName = file.getOriginalFilename() == null ? "" : file.getOriginalFilename();
         String extension = extractExtension(originalName);
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "지원하지 않는 로고 형식입니다. (jpg, jpeg, png, webp, gif, svg)");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "지원하지 않는 로고 형식입니다. (jpg, jpeg, png, webp, gif)");
         }
 
         try {

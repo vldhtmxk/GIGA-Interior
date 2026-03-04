@@ -1,6 +1,5 @@
 import Image from "next/image"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { recruitApi, resolveAssetUrl, type RecruitResponse } from "@/lib/api"
 import { ArrowLeft, Calendar, MapPin, Clock, Briefcase } from "lucide-react"
 
@@ -69,168 +68,146 @@ export default async function JobDetailPage({
 
   if (!job) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">채용공고를 찾을 수 없습니다</h1>
-          <Button asChild>
-            <Link href="/recruit">채용정보로 돌아가기</Link>
-          </Button>
+      <main className="giga-public-surface flex min-h-screen items-center justify-center px-6 pt-24">
+        <div className="border border-white/10 p-10 text-center">
+          <h1 className="giga-display text-4xl font-light text-white">Position Not Found</h1>
+          <p className="mt-3 text-sm text-white/45">채용공고를 찾을 수 없습니다.</p>
+          <Link
+            href="/recruit"
+            className="mt-6 inline-flex items-center gap-2 border border-[#c9a96e]/60 px-6 py-3 text-[10px] uppercase tracking-[0.22em] text-[#c9a96e] transition-colors hover:bg-[#c9a96e] hover:text-[#0a0a0a]"
+          >
+            채용정보로 돌아가기
+          </Link>
         </div>
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="bg-white">
-      {/* Header */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Button asChild variant="outline" className="mb-6">
-            <Link href="/recruit">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              채용정보로 돌아가기
-            </Link>
-          </Button>
+    <main className="giga-public-surface min-h-screen pt-24">
+      <section className="mx-auto max-w-[1400px] px-6 py-16 lg:px-16 lg:py-20">
+        <Link
+          href="/recruit"
+          className="mb-7 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/45 transition-colors hover:text-[#c9a96e]"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          채용정보로 돌아가기
+        </Link>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-4 mb-4">
-                <span className="px-3 py-1 bg-black text-white rounded-full text-sm font-medium">{job.department}</span>
-                <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">{job.type}</span>
-              </div>
-
-              <h1 className="text-4xl font-bold text-black mb-4">{job.title}</h1>
-              <p className="text-xl text-gray-600 mb-6">{job.description}</p>
-
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-600">경력: {job.experience}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-600">위치: {job.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-600">마감: {job.deadline}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-600">근무시간: {job.workingHours}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg border h-fit">
-              <h3 className="font-semibold text-black mb-4">채용 정보</h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">부서</span>
-                  <span className="font-medium">{job.department}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">고용형태</span>
-                  <span className="font-medium">{job.type}</span>
-                </div>
-                {job.salary && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">연봉</span>
-                    <span className="font-medium">{job.salary}</span>
-                  </div>
-                )}
-                <div className="pt-4">
-                  <Button asChild className="w-full bg-black text-white hover:bg-gray-800">
-                  <Link href={`/recruit/apply?recruitId=${job.id}`}>지원하기</Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="border border-[#c9a96e]/40 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-[#c9a96e]">
+            {job.department}
+          </span>
+          <span className="border border-white/15 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-white/45">{job.type}</span>
         </div>
+
+        <h1 className="giga-display giga-fade-up text-[clamp(2.2rem,6vw,5rem)] font-light leading-none text-white">{job.title}</h1>
+        <p className="giga-fade-up mt-5 max-w-3xl text-sm leading-relaxed text-white/45 lg:text-base">{job.description}</p>
       </section>
 
-      {/* Job Images */}
       {job.images.length > 0 && (
-        <section className="py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {job.images.map((image, index) => (
-                <div key={index} className="relative h-64 rounded-lg overflow-hidden">
-                  <Image
-                    src={image || "/placeholder.svg"}
-                    alt={`${job.title} - ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
+        <section className="mx-auto max-w-[1400px] px-6 pb-12 lg:px-16">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {job.images.map((image, index) => (
+              <div key={index} className="giga-card-reveal relative h-[36vh] overflow-hidden border border-white/10 sm:h-[46vh]">
+                <Image src={image || "/placeholder.svg"} alt={`${job.title} - ${index + 1}`} fill className="object-cover" />
+              </div>
+            ))}
           </div>
         </section>
       )}
 
-      {/* Job Details */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* 주요 업무 */}
-            <div>
-              <h2 className="text-2xl font-bold text-black mb-6">주요 업무</h2>
-              <ul className="space-y-3">
-                {job.responsibilities.map((responsibility, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-black rounded-full mt-2 flex-shrink-0" />
-                    <span className="text-gray-700">{responsibility}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* 지원 자격 */}
-            <div>
-              <h2 className="text-2xl font-bold text-black mb-6">지원 자격</h2>
-              <ul className="space-y-3">
-                {job.requirements.map((requirement, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-black rounded-full mt-2 flex-shrink-0" />
-                    <span className="text-gray-700">{requirement}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* 복리후생 */}
-            <div>
-              <h2 className="text-2xl font-bold text-black mb-6">복리후생</h2>
-              <ul className="space-y-3">
-                {job.benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-black rounded-full mt-2 flex-shrink-0" />
-                    <span className="text-gray-700">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+      <section className="mx-auto max-w-[1400px] px-6 pb-16 lg:px-16 lg:pb-20">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+          <div className="giga-card-reveal border border-white/10 p-5">
+            <p className="text-[10px] uppercase tracking-[0.22em] text-white/30">Experience</p>
+            <p className="mt-3 inline-flex items-center gap-2 text-sm text-white/70">
+              <Briefcase className="h-4 w-4 text-[#c9a96e]" /> {job.experience}
+            </p>
+          </div>
+          <div className="giga-card-reveal border border-white/10 p-5">
+            <p className="text-[10px] uppercase tracking-[0.22em] text-white/30">Location</p>
+            <p className="mt-3 inline-flex items-center gap-2 text-sm text-white/70">
+              <MapPin className="h-4 w-4 text-[#c9a96e]" /> {job.location}
+            </p>
+          </div>
+          <div className="giga-card-reveal border border-white/10 p-5">
+            <p className="text-[10px] uppercase tracking-[0.22em] text-white/30">Deadline</p>
+            <p className="mt-3 inline-flex items-center gap-2 text-sm text-white/70">
+              <Calendar className="h-4 w-4 text-[#c9a96e]" /> {job.deadline}
+            </p>
+          </div>
+          <div className="giga-card-reveal border border-white/10 p-5">
+            <p className="text-[10px] uppercase tracking-[0.22em] text-white/30">Working Hours</p>
+            <p className="mt-3 inline-flex items-center gap-2 text-sm text-white/70">
+              <Clock className="h-4 w-4 text-[#c9a96e]" /> {job.workingHours}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-12">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-black mb-6">지원하고 싶으신가요?</h2>
-          <p className="text-gray-600 mb-8">GIGA Interior와 함께 성장할 기회를 놓치지 마세요</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-black text-white hover:bg-gray-800">
-              <Link href={`/recruit/apply?recruitId=${job.id}`}>지원하기</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/contact">문의하기</Link>
-            </Button>
+      <section className="mx-auto max-w-[1400px] px-6 pb-20 lg:px-16">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <article className="giga-card-reveal border border-white/10 p-7">
+            <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-[#c9a96e]">Responsibilities</p>
+            <ul className="space-y-3">
+              {job.responsibilities.map((item, index) => (
+                <li key={index} className="flex gap-3 text-sm text-white/55">
+                  <span className="mt-2 h-1.5 w-1.5 bg-[#c9a96e]" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="giga-card-reveal border border-white/10 p-7">
+            <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-[#c9a96e]">Requirements</p>
+            <ul className="space-y-3">
+              {job.requirements.map((item, index) => (
+                <li key={index} className="flex gap-3 text-sm text-white/55">
+                  <span className="mt-2 h-1.5 w-1.5 bg-[#c9a96e]" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="giga-card-reveal border border-white/10 p-7">
+            <p className="mb-5 text-[10px] uppercase tracking-[0.25em] text-[#c9a96e]">Benefits</p>
+            <ul className="space-y-3">
+              {job.benefits.map((item, index) => (
+                <li key={index} className="flex gap-3 text-sm text-white/55">
+                  <span className="mt-2 h-1.5 w-1.5 bg-[#c9a96e]" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-[1400px] px-6 pb-24 lg:px-16">
+        <div className="relative overflow-hidden border border-white/10 p-10 text-center lg:p-14">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#c9a96e]/10 to-transparent" />
+          <p className="relative z-10 mb-3 text-[10px] uppercase tracking-[0.28em] text-[#c9a96e]">Apply Now</p>
+          <h2 className="giga-display relative z-10 text-[clamp(1.8rem,4vw,3rem)] font-light text-white">함께 성장할 준비가 되셨나요?</h2>
+          <p className="relative z-10 mx-auto mt-3 max-w-xl text-sm text-white/45">지원서를 제출하시면 검토 후 순차적으로 연락드리겠습니다.</p>
+          <div className="relative z-10 mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              href={`/recruit/apply?recruitId=${job.id}`}
+              className="inline-flex items-center justify-center bg-[#c9a96e] px-8 py-3 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a] transition-colors hover:bg-white"
+            >
+              지원하기
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center border border-[#c9a96e]/60 px-8 py-3 text-[10px] uppercase tracking-[0.22em] text-[#c9a96e] transition-colors hover:bg-[#c9a96e] hover:text-[#0a0a0a]"
+            >
+              문의하기
+            </Link>
           </div>
         </div>
       </section>
-    </div>
+    </main>
   )
 }
